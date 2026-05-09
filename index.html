@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SAKEMARU 東日本職人沉浸之旅｜四重微醺巡禮×獨家釀造體驗</title>
+    
+    <!-- 預先連線圖片伺服器，大幅提升圖片載入速度 -->
+    <link rel="preconnect" href="https://images.unsplash.com">
+    <link rel="preconnect" href="https://i.postimg.cc">
+    <!-- 預先載入首圖，讓進站第一眼畫面瞬間顯示 -->
+    <link rel="preload" as="image" href="https://i.postimg.cc/3xvmp237/zhu-shi-jue-lu-ying-zhao-pian-feng-mian.jpg">
+
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=Noto+Serif+TC:wght@400;700&family=Shippori+Mincho:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* 修正 iOS 滑動卡頓的關鍵 CSS */
+        html, body {
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch; 
+        }
+        
+        /* iframe 容器修正，確保在 iOS 上能順暢滑動 */
+        .iframe-scroll-container {
+            -webkit-overflow-scrolling: touch;
+            overflow-y: auto;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #fafaf9; /* Stone-50 */
+            color: #1c1917; /* Stone-900 */
+            -webkit-tap-highlight-color: transparent; /* iOS click fix */
+            /* padding-bottom 調整：預留給底部固定警語的空間 */
+            padding-bottom: 12vh; 
+        }
+        @media (min-width: 768px) { 
+            body { padding-bottom: 10vh; } 
+        }
+
+        /* 警語區塊專用樣式 */
+        .alcohol-warning-container {
+            height: 12vh; /* 手機版高度：螢幕 12% */
+            min-height: 60px;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px; /* 圖文間距 */
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            z-index: 9999;
+        }
+        .alcohol-warning-img {
+            height: 90%; /* 圖片高度佔橫幅的 90% */
+            width: auto;
+            object-fit: contain;
+        }
+        .alcohol-warning-text {
+            color: #FFF;
+            font-weight: bold;
+            font-size: 5vw; /* 手機版字體大小隨螢幕縮放 */
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
+
+        /* 電腦版調整 */
+        @media (min-width: 768px) {
+            .alcohol-warning-container {
+                height: 10vh; /* 電腦版高度：螢幕 10% */
+                min-height: 80px;
+                gap: 30px;
+            }
+            .alcohol-warning-text {
+                font-size: 2.5rem; /* 電腦版固定大字體 */
+            }
+        }
+
+        .en-font {
+            font-family: 'Playfair Display', serif;
+        }
+        h1, h2, h3, h4, .serif-font {
+            font-family: 'Noto Serif TC', serif;
+        }
+        .japanese-font {
+            font-family: 'Shippori Mincho', serif;
+        }
+        .bg-pattern {
+            background-image: radial-gradient(#444cf7 0.5px, transparent 0.5px), radial-gradient(#444cf7 0.5px, #fafaf9 0.5px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            opacity: 0.05;
+        }
+        .hero-gradient {
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7));
+        }
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        .animate-pulse-slow {
+            animation: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        /* Mobile Touch Area Fix */
+        .touch-target {
+            padding: 10px;
+            margin: -10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        /* --- CONFIGURATION --- */
+        const GOOGLE_FORM_SEMINAR_URL = "https://docs.google.com/forms/d/e/1FAIpQLSey9VUEv7nN8J3_0_jLCN11jvkkHIqDd21tX_sfDQ4399vKWg/viewform?embedded=true";
+        const GOOGLE_FORM_PAYMENT_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdrRDoSWrh5nEQPJXjWgKb56hLOGw_ivFg08kZsWZZkvPv0rA/viewform?embedded=true";
+        
+        /* Updated Logo (Transparent PNG) */
+        const LOGO_URL = "https://i.postimg.cc/KjLwnYRD/42985006-0cbc-4951-a736-3d508fd7d6c0.png";
+        
+        /* Updated Alcohol Warning Banner */
+        const WARNING_IMAGE_URL = "https://i.postimg.cc/fLF98KgN/wei-ming-ming-she-ji-(7).png";
+
+        /* --- TRANSLATIONS --- */
+        const translations = {
+            'zh-TW': {
+                nav: { language: "語言", highlights: "行程亮點", breweries: "四重微醺巡禮", testimonials: "旅客回饋", itinerary: "每日行程", pricing: "價格方案", faq: "常見問答", seminar: "說明會報名", book: "立即預約" },
+                hero: { subtitle: "SAKEMARU 2026 秋季限定團", title: "從稻浪到星空：東日本職人沉浸之旅", sub: "5日行程｜四重微醺巡禮 × 特色餐酒 × 豪華露營", desc: "16-18席限定｜打破觀光客界線，走入釀酒人的真實日常", date: "2026/09/12（六） - 09/16（三）", explore: "探索行程", reserve: "搶先預約", seminarBtn: "行程說明會報名", seminarBtnSub: "NT$ 200 / 人 (含三款清酒品飲與小點)" },
+                highlights: { title: "主題體驗：從稻浪到星空", desc: "「這一次，我們不只品飲，我們親身參與釀造。」\n從踏入金黃稻田揮鐮割稻，到夜晚與酒造社長在星空下舉杯；從傳統清酒的細膩，到自然酒莊的綠意微醺。這是一場打破觀光客界線、真正走入日本釀酒人日常的深度五感對話。", 
+                     f1: { t: "溯源之手：從土地到酒杯", d: "這不是隔著玻璃的走馬看花！淺間山酒造是少數一年四季皆有釀酒的酒廠，因此即使在非傳統的冬季釀造期，您也能見證真實的釀造工序，並在社長帶領下體驗攪拌酒醪的「櫂入れ」。搭配專屬的割稻體驗，體會從一粒米孕育為一滴酒的感動。" },
+                    f2: { t: "風土之味：跨越和洋美學", d: "旅程中為您特別策劃了數場專屬的 Pairing 饗宴。除了與淺間山社長同桌的專屬餐酒午宴，割稻後更有機會與在地農家齊聚交流。此外，更特別造訪小諸葡萄酒莊，品味長野縣特有風土底蘊，享受清酒與葡萄酒交織的層次。" },
+                    f3: { t: "星夜之話：私密職人對話", d: "打破常規，特別企劃與聖酒造社長的星空豪華露營（Glamping）！在戶外 BBQ 氛圍中如朋友般舉杯暢談；酒酣耳熱之際，更獨家安排充滿神祕感的「夜間酒造參訪」，感受酒造萬籟俱寂時獨有的靜謐與生命力。" },
+                    f4: { t: "精緻微型團：16-18席限定", d: "為確保最深度的交流與體驗品質，本團精心將人數彈性控制在 16 至 18 位成人之間。讓您從品飲者升級為參與者，保持恰到好處的熱鬧與專屬感。" }
+                },
+                breweries: { title: "四重微醺巡禮", desc: "跨越和洋，深入淺出感受在地風土的職人體驗。", 
+                     b1: { name: "淺間山酒造", desc: "親自參與「淺間山釀造體驗與酒造見學」，即使在非釀造期也能透過四季釀造見證製程，並體驗攪拌酒醪的「櫂入れ」。行程亦包含專屬割稻體驗（※遇雨取消），並將安排與淺間山社長共進獨家的餐酒午宴。", tag: "釀造與割稻體驗" },
+                    b2: { name: "聖酒造", desc: "打破傳統的酒造參訪形式，我們安排在群馬縣的 Blissful Garden 豪華露營區進行 BBQ 晚餐後，於晚間特別進入聖酒造進行專屬參觀，並在酒造內舉行清酒二次會，感受萬籟俱寂下的微醺氛圍。", tag: "晚間專屬見學" },
+                    b3: { name: "町田酒造", desc: "在日本最大型酒評網 SAKETIME 榮獲群馬縣第一好評，評價超越許多全國知名銘柄。由群馬縣首位女性杜氏『町田惠美』操刀，將初期的逆境化為力量，創下在全國新酒鑑評會 9 年內勇奪 7 次金賞的驚人紀錄。您將深入參訪這座由夫妻攜手釀造奇蹟的矚目酒廠。", tag: "金賞名廠參訪" },
+                    b4: { name: "小諸葡萄酒莊", desc: "位於長野縣小諸市的絕美葡萄酒莊。坐擁壯麗的自然景觀，您可以漫步在綠意盎然的葡萄園中，深入了解日本國產葡萄酒的釀造工藝，並品味長野縣獨特的風土底蘊。", tag: "自然風土酒莊" }
+                },
+                testimonials: { 
+                     title: "上一團的感動回饋", 
+                     desc: "聽聽參加過 SAKEMARU 職人朝聖之路的團員怎麼說。",
+                    reviews: [
+                        { name: "熱血藏人體驗者", tag: "2026/03 參團者", text: "沒想到可以親手把蒸好的米散、投入到清酒槽裡，雖然只有短短時間的體驗，但已經開始期待釀好的清酒了！感覺自己像個藏人一樣😆", image: "https://i.postimg.cc/SQ2R1kYT/gan-dong-hui-kui-re-xue-cang-ren-ti-yan-zhe.jpg" },
+                        { name: "深度文化探索者", tag: "2026/03 參團者", text: "實地參訪百年酒造並體驗釀造流程，更理解清酒文化與日本飲食的連結，也看見不同時代釀酒人的努力。", image: "https://i.postimg.cc/8kJcXNf3/gan-dong-hui-kui-shen-du-wen-hua-tan-suo-zhe.jpg" },
+                        { name: "地方酒造愛好者", tag: "2026/03 參團者", text: "在喝了很多有名的酒造銘柄後，能接觸到小型且具地方特色的小型酒造，並且通過見學體驗和試飲接觸到社長和杜氏本人並且聽他們介紹自家的酒款特色包括自己對工作的執念，是很不錯的體驗", image: "https://i.postimg.cc/Rh2qVb6V/gan-dong-hui-kui-de-fang-jiu-zao-ai-hao-zhe.jpg" }
+                    ]
+                },
+                itinerary: { title: "五日深度行程表", 
+                     d1: { t: "台北 → 東京成田 → 長瀞遊船 → 輕井澤", am: "集合於桃園機場，搭乘台灣虎航 IT 200 飛往東京成田機場 (06:35-11:00)。", pm: <span>抵達機場後，隨即前往享受【<a href="https://www.japan.travel/tw/experiences-in-japan/4285/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">長瀞遊船體驗</a>】，欣賞沿途的奇岩怪石與壯麗的峽谷風光。</span>, night: <span>入住【<a href="https://www.karuizawaclub.co.jp/hotel1130/ct/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">輕井澤 1130 飯店</a>或同級】，晚餐於飯店內享用含酒水的精緻晚餐。</span>, meal: {b: "X", l: "自理", d: "飯店內豪華晚餐(含酒水)"}, hotel: <span><a href="https://www.karuizawaclub.co.jp/hotel1130/ct/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">輕井澤 1130 飯店</a> 或 同級</span> },
+                    d2: { t: "淺間山釀造/割稻體驗 → 草津溫泉", am: <span>★獨家體驗【<a href="https://tw.sakemaru.me/blogs/%E9%85%92%E9%80%A0/%E6%B5%85%E9%96%93%E9%85%92%E9%80%A0" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">淺間山釀造體驗＆酒造見學</a>】：開始深度體驗，並特別安排【割稻體驗】(※遇雨則取消)。</span>, l_text: "安排與「淺間山社長」共進專屬的餐酒午宴。", pm: <span>前往日本三大名泉之一的【<a href="https://www.japan.travel/hk/spot/1518/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">草津溫泉</a>】，享受古老溫泉街的獨特風情。</span>, stay: <span>入住頂級飯店【<a href="https://dormy-hotels.com/resort/hotels/la_kusatsu/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">La Vista 草津 Hills</a> 或同級】，享用含酒水的精緻晚餐。</span>, meal: {b: "飯店內", l: "社長餐酒午宴", d: "飯店內晚餐(含酒水)"}, hotel: <span><a href="https://dormy-hotels.com/resort/hotels/la_kusatsu/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">La Vista 草津 Hills</a> 或 同級</span> },
+                    d3: { t: "小諸葡萄酒莊 → 舊輕井澤銀座通 → 豪華露營 & 聖酒造", am: <span>上午前往【<a href="https://mannswines.com/winery/komoro/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">小諸葡萄酒莊</a>】，參觀充滿綠意的特色酒莊。</span>, l_text: "午餐享用特色便當或彈性自理。", sight: <span>下午安排【<a href="https://www.japan.travel/hk/spot/671/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">舊輕井澤銀座通散策</a>】，漫步於歐風街道，品嚐當地特色小吃與購物。</span>, night: <span>傍晚 16:00~17:00 抵達群馬縣【<a href="https://blissful-g.jp/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">Blissful Garden 豪華露營</a>】營地，享用歡樂的 BBQ 晚餐。晚餐後，特別安排晚間【<a href="https://tw.sakemaru.me/blogs/%E9%85%92%E9%80%A0/%E8%81%96%E9%85%92%E9%80%A0" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">聖酒造</a>】參觀體驗及二次會。</span>, meal: {b: "飯店內", l: "特色便當或自理", d: "露營區 BBQ 晚餐"}, hotel: <span><a href="https://blissful-g.jp/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">Blissful Garden 豪華露營</a> (預訂 3 個大型帳篷)</span> },
+                    d4: { t: "涉川稻米收割 → 町田酒造參訪 → 東京市區", am: "上午前往群馬縣涉川市，展開熱血的【涉川稻米收割體驗】(※遇雨則取消)。", l_text: "午間安排包場，有機會與在地農家及酒造社長一同享用溫馨美味的午宴。", pm: <span>下午進行【<a href="https://tw.sakemaru.me/blogs/%E9%85%92%E9%80%A0/%E7%94%BA%E7%94%B0%E9%85%92%E9%80%A0" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">町田酒造參訪</a>】，深入了解群馬在地金賞釀酒工藝。隨後返回東京市區。</span>, stay: <span>入住【<a href="https://www.princehotels.com/sunshine/zh-hant/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">太陽城王子大飯店</a> 或 同級】，晚上可於周邊自由活動，享受東京的繁華夜晚。</span>, meal: {b: "飯店內", l: "農家與社長午宴", d: "方便逛街，敬請自理"}, hotel: <span><a href="https://www.princehotels.com/sunshine/zh-hant/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">太陽城王子大飯店</a> 或 同級</span> },
+                    d5: { t: "東京 → 台北", am: "白天於東京市區自由活動，您可盡情購物、品嚐美食或參觀市區景點。", pm: "傍晚前往東京成田機場，搭乘台灣虎航 IT 203 (19:30-22:35) 返回台北溫暖的家。", meal: {b: "飯店內", l: "方便逛街，敬請自理", d: "自理"}, hotel: "溫暖的家" },
+                    noteTitle: "行程重要備註", notes: ["9/14 安排入住 Blissful Garden 豪華露營，為讓大家感受熱鬧的營地氛圍，我們預訂了 3 個大型帳篷，每帳安排 4~6 人同住。因帳篷分配，將有男女混住之可能；不過帳內空間極為寬敞，且皆為獨立雙人床鋪，確保您在親近自然之餘，也能保有舒適不擁擠的放鬆睡眠，敬請安心體驗。","9/13 淺間山酒造、9/15 聖酒造的涉川割稻體驗，如遇下雨等天候不佳因素皆將取消，敬請見諒。"],
+                    tags: { am: "上午", pm: "下午", lunch: "午餐", night: "晚上", stay: "住宿", sight: "景點", breakfast: "早餐", dinner: "晚餐" }
+                },
+                info: { title: "視覺導覽", flight: "台灣虎航 航班資訊", flightNote: "*實際航班以團體確認的航班編號與飛行時間為準。", 
+                     important: "重要旅遊須知與法規提醒", 
+                     i1: "旅遊保險：本公司已投保旅行業契約責任險 250 萬，醫療險 20 萬。",
+                    i2: "住宿安排：9/14 豪華露營安排為 3 個大型帳篷，可能有男女混住情況，報名前請務必知悉 (帳內為獨立雙人床鋪)。",
+                    i3: "行程變更：戶外體驗（如兩次割稻行程）將依當地天候狀況調整，若遇雨取消敬請見諒。",
+                    i4: "特殊需求：若有食物過敏或特殊餐飲需求，請於出發前至少 5 天告知。",
+                    /* Gallery Translations */
+                    gallery: [
+                        { title: "長瀞遊船", desc: "體驗峽谷風光與大自然的鬼斧神工" },
+                        { title: "草津溫泉", desc: "日本三大名泉，享受頂級泡湯洗禮" },
+                        { title: "豪華露營 BBQ", desc: "星空下的戶外饗宴，獨特的住宿體驗" },
+                        { title: "淺間山釀造體驗", desc: "真實體驗櫂入れ與割稻，感受土地恩賜" },
+                        { title: "輕井澤 1130 飯店", desc: "置身於大自然中的優雅度假體驗" },
+                        { title: "小諸葡萄酒莊", desc: "漫步綠意酒莊，品味在地風土" },
+                        { title: "社長專屬午宴", desc: "與酒造職人深度交流的難得機會" },
+                        { title: "町田酒造", desc: "探索獲獎無數的群馬第一金賞酒廠" }
+                    ],
+                    flightTable: { outbound: "去程", return: "回程", taipei: "台北", osaka: "東京成田" }
+                },
+                faq: { title: "常見問答",
+                    q1: "費用是否已包含所有項目？", a1: "是的。包含機票、住宿、餐食、導遊服務費、車資及四大釀造名所的深度體驗費用。",
+                    q2: "豪華露營的住宿安排是怎樣的？", a2: "9/14 的豪華露營我們預訂了 3 個大帳篷。因分配考量，會有男女混住的可能，但帳內空間寬敞且為獨立雙人床鋪，兼顧熱鬧與舒適。",
+                    q3: "若遇下雨，割稻體驗會取消嗎？", a3: "是的，為考量安全與體驗品質，行程中的割稻體驗若遇雨皆會取消，敬請見諒。",
+                    q4: "酒造體驗是否只是參觀？", a4: "不！這是本團核心價值。包含櫂入れ攪拌體驗、夜間見學二次會、割稻體驗以及與社長的專屬餐酒午宴，這是觀光團無法提供的深度行程。",
+                    q5: "本團的出發人數限制是多少？", a5: "本團精心將人數彈性控制在 16 至 18 位成人之間，以確保最優質的體驗。若出發前未達最低成團人數，我們將會全額退還您已繳付之訂金。",
+                    q6: "早鳥優惠與雙人同行優惠可同時使用嗎？", a6: "不可同時使用。方案A與方案B屬於獨立促銷方案，請擇一報名。",
+                    q7: "單人報名是否需要加價？", a7: "是的。若單人入住需加收房差 NT$10,000。若不介意與同性旅客二人一室則無需加價。"
+                },
+                pricing: { countdown: "早鳥優惠名額倒數！", title: "行程定價與席次鎖定", sub: "16-18席限定！體驗匠人精神，品嚐純粹風味。",
+                    official: "官方牌價 (二人一室)", early: "方案 A：超級早鳥 (95折)", earlyNote: "限量優惠", double: "方案 B：雙人同行優惠", doubleNote: "每人現折 $1,000",
+                    joinLocal: "", joinDesc: "", finalPrice: "專案優惠價：", perPerson: "/ 人",
+                    note: "* 本表為報價需求參考，實際收費請依專員提供之報價單為主。", bonus: "", bonusDesc: "",
+                    btnLine: "LINE 官方帳號諮詢", btnFb: "Facebook粉絲專頁諮詢", btnIg: "Instagram官方帳號諮詢", btnCall: "撥打諮詢 (02-2700-0903)", btnSeminar: "說明會報名", btnSeminarSub: "NT$ 200 / 人 (含三款清酒品飲與小點)",
+                    timeUnits: { d: "天", h: "時", m: "分", s: "秒" },
+                    modalTitle: "請選擇付款方式", credit: "線上刷卡", creditNote: "刷卡請洽專員諮詢", transfer: "銀行匯款"
+                },
+                footer: { desc: "SAKEMARU 東日本職人沉浸之旅。\n為確保所有獨家行程皆能順利執行，本公司將依據《國內／國外旅遊定型化契約》之規定，並以旅客權益為首要考量，於必要時進行行程調整。",
+                    contact: "聯絡資訊", tel: "電話諮詢", addr: "聯絡地址", addrVal: "台北市大安區瑞安街226號", official: "官方網站", partner: "日紳旅遊", license: "旅行社品質保障協會字第北2190號‧交觀甲字第7830號",
+                    note: "注意事項", insure: "旅行業契約責任險 250萬，醫療險 20萬。", age: "預計出團人數 16-18 人。",
+                    copy: "© 2026 SAKEMARU 清酒職人朝聖之路. All rights reserved.", design: "Design by 獅日子有限公司"
+                },
+                seminar: { tag: "SAKEMARU 限定活動", title: "東日本職人沉浸之旅｜行程說明會報名", sub: "為了讓您更安心地踏上這趟旅程，我們特別舉辦行前品飲會。現場品嚐酒造銘柄，預覽獨家體驗。",
+                    f1: "品飲精選佳釀", f2: "現場連線互動", f3: "限額席次",
+                    infoTitle: "活動資訊", time: "時間", timeVal: "近期即將公佈", loc: "地點", locVal: "台北市大安區瑞安街226號 (SAKEMARU 瑞安店)", fee: "費用", feeVal: "NT$ 200 / 人 (含三款清酒品飲與小點)",
+                    highlightTitle: "活動亮點", h1: "四重巡禮前哨戰：搶先品嚐淺間山、聖酒造、町田酒造代表作。", h2: "行程深度解析：由專業顧問詳細拆解每日亮點，包含割稻與露營安排。", h3: "消除所有疑慮：面對面解答您對於住宿安排與餐食的所有問題。",
+                    formTitle: "立即報名說明會", back: "返回官網"
+                },
+                card: "刷卡需加2%"
+            },
+            'en': {
+                nav: { language: "Language", highlights: "Highlights", breweries: "Four Visits", testimonials: "Reviews", itinerary: "Itinerary", pricing: "Pricing", faq: "FAQ", seminar: "Seminar Registration", book: "Book Now" },
+                hero: { subtitle: "SAKEMARU 2026 Autumn Exclusive", title: "From Rice Waves to Starry Skies: East Japan Artisan Journey", sub: "5-Day Tour | Four Intoxicating Visits × Special Pairing × Glamping", desc: "Limited to 16-18 Adults | Break the tourist boundaries and step into the brewers' lives", date: "Sep 12 (Sat) - Sep 16 (Wed), 2026", explore: "Explore", reserve: "Reserve", seminarBtn: "Seminar Registration", seminarBtnSub: "NT$ 200 / person (Includes 3 sakes)" },
+                highlights: { title: "Theme: From Rice Waves to Starry Skies", desc: "This time, we don't just taste; we brew. A deep sensory dialogue that breaks the boundaries of a tourist and truly steps into the daily lives of Japanese brewers.", 
+                     f1: { t: "Hands-on Sourcing", d: "Experience the rare 'year-round brewing' at Asamayama Brewery. Witness the actual brewing process and personally try stirring the sake mash (Kaii-re) led by the president. Paired with exclusive rice harvesting, feel the journey from grain to drop." },
+                    f2: { t: "Taste of Terroir", d: "Enjoy curated pairing experiences. Delight in an exclusive pairing lunch with the Asamayama president, and have the chance to share a post-harvest lunch with local farmers. We'll also visit Komoro Winery to explore Nagano's unique terroir." },
+                    f3: { t: "Starry Conversations", d: "We break the norm with a Glamping BBQ under the stars alongside the Hijiri Brewery president. Followed by a highly exclusive and mysterious 'nighttime brewery tour' to experience the brewing vitality in absolute silence." },
+                    f4: { t: "Intimate Group: 16-18 Pax", d: "Carefully controlled to 16-18 adults to ensure the deepest interaction and experience quality. Upgrade from a drinker to a participant while maintaining an ideal balance of liveliness and exclusivity." }
+                },
+                breweries: { title: "Four Intoxicating Visits", desc: "A deep dive into local terroir across both sake and wine.", 
+                     b1: { name: "Asamayama Brewery", desc: "Participate in brewing and tours. Thanks to year-round brewing, witness the process and try 'Kaii-re' (stirring the mash). Includes rice harvesting (cancelled if raining) and an exclusive pairing lunch with the president.", tag: "Brewing & Harvesting" },
+                    b2: { name: "Hijiri Brewery", desc: "Breaking traditional formats, we arranged a special night visit to Hijiri Brewery after a BBQ dinner at Blissful Garden Glamping site, followed by a sake after-party right inside the brewery.", tag: "Night Tour" },
+                    b3: { name: "Machida Brewery", desc: "Ranked #1 in Gunma on SAKETIME. Led by Emi Machida, Gunma's first female Toji, this acclaimed brewery won 7 Gold Medals in 9 years at the National New Sake Awards. Explore this miraculous brewery run by a husband-and-wife team.", tag: "Gold Medal Tour" },
+                    b4: { name: "Komoro Winery", desc: "A stunning winery in Komoro, Nagano. Stroll through the lush vineyards, learn about Japanese domestic winemaking, and taste the unique terroir of Nagano Prefecture.", tag: "Natural Terroir" }
+                },
+                testimonials: { 
+                     title: "Heartwarming Feedback", 
+                     desc: "Hear what previous SAKEMARU Artisan Pilgrimage members have to say.",
+                    reviews: [
+                        { name: "Sake Brewing Enthusiast", tag: "2026/03 Member", text: "I didn't expect to personally scatter the steamed rice and put it into the sake tank! Although it was a short experience, I am already looking forward to the brewed sake. Felt like a real Kurabito 😆", image: "https://i.postimg.cc/SQ2R1kYT/gan-dong-hui-kui-re-xue-cang-ren-ti-yan-zhe.jpg" },
+                        { name: "Deep Culture Explorer", tag: "2026/03 Member", text: "Visiting a century-old brewery and experiencing the brewing process helped me better understand the connection between sake culture and Japanese cuisine, as well as the efforts of brewers across different eras.", image: "https://i.postimg.cc/8kJcXNf3/gan-dong-hui-kui-shen-du-wen-hua-tan-suo-zhe.jpg" },
+                        { name: "Local Brewery Fan", tag: "2026/03 Member", text: "After tasting many famous brands, it was a great experience to discover small, local breweries. Through the tour and tasting, meeting the president and Toji directly, and hearing their passion and dedication to their craft was truly special.", image: "https://i.postimg.cc/Rh2qVb6V/gan-dong-hui-kui-de-fang-jiu-zao-ai-hao-zhe.jpg" }
+                    ]
+                },
+                itinerary: { title: "5-Day In-Depth Itinerary", 
+                     d1: { t: "Taipei → Tokyo Narita → Nagatoro Cruise → Karuizawa", am: "Gather at Taoyuan Airport, take Tigerair Taiwan IT 200 to Tokyo Narita (06:35-11:00).", pm: <span>Head to enjoy the <a href="https://www.japan.travel/tw/experiences-in-japan/4285/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">Nagatoro River Cruise</a>, admiring the spectacular gorge scenery.</span>, night: <span>Check in at <a href="https://www.karuizawaclub.co.jp/hotel1130/ct/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">Karuizawa 1130 Hotel</a> or similar. Enjoy a fine dinner at the hotel (drinks included).</span>, meal: {b: "X", l: "Self-arranged", d: "Hotel Dinner"}, hotel: <span><a href="https://www.karuizawaclub.co.jp/hotel1130/ct/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">Karuizawa 1130 Hotel</a> or similar</span> },
+                    d2: { t: "Asamayama Brewing/Harvesting → Kusatsu Onsen", am: <span>★Exclusive: <a href="https://tw.sakemaru.me/blogs/%E9%85%92%E9%80%A0/%E6%B5%85%E9%96%93%E9%85%92%E9%80%A0" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">Asamayama Brewing Experience & Tour</a> starts, including a special Rice Harvesting experience (cancelled if raining).</span>, l_text: "Exclusive pairing lunch with the Asamayama President.", pm: <span>Head to <a href="https://www.japan.travel/hk/spot/1518/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">Kusatsu Onsen</a>, one of Japan's top three hot springs.</span>, stay: <span>Check in at the premium <a href="https://dormy-hotels.com/resort/hotels/la_kusatsu/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">La Vista Kusatsu Hills</a> or similar. Enjoy a fine dinner (drinks included).</span>, meal: {b: "Hotel", l: "President Pairing Lunch", d: "Hotel Dinner"}, hotel: <span><a href="https://dormy-hotels.com/resort/hotels/la_kusatsu/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">La Vista Kusatsu Hills</a> or similar</span> },
+                    d3: { t: "Komoro Winery → Old Karuizawa → Glamping & Hijiri Brewery", am: <span>Morning visit to the lush <a href="https://mannswines.com/winery/komoro/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">Komoro Winery</a>.</span>, l_text: "Special bento lunch or self-arranged.", sight: <span>Afternoon stroll along the <a href="https://www.japan.travel/hk/spot/671/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">Old Karuizawa Ginza Street</a> for local snacks and shopping.</span>, night: <span>Arrive at the <a href="https://blissful-g.jp/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">Blissful Garden Glamping</a> site (16:00-17:00) for a BBQ dinner. Followed by a special night visit to <a href="https://tw.sakemaru.me/blogs/%E9%85%92%E9%80%A0/%E8%81%96%E9%85%92%E9%80%A0" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">Hijiri Brewery</a> and an after-party.</span>, meal: {b: "Hotel", l: "Bento or Self", d: "Glamping BBQ"}, hotel: <span><a href="https://blissful-g.jp/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">Blissful Garden Glamping</a> (3 large tents)</span> },
+                    d4: { t: "Shibukawa Harvesting → Machida Brewery → Tokyo City", am: "Morning travel to Shibukawa, Gunma for a passionate Rice Harvesting experience (cancelled if raining).", l_text: "Private lunch banquet with the chance to dine with local farmers and the brewery president.", pm: <span>Afternoon visit to <a href="https://tw.sakemaru.me/blogs/%E9%85%92%E9%80%A0/%E7%94%BA%E7%94%B0%E9%85%92%E9%80%A0" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">Machida Brewery</a> to learn about their Gold-Medal brewing craft. Return to Tokyo.</span>, stay: <span>Check in at <a href="https://www.princehotels.com/sunshine/zh-hant/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">Sunshine City Prince Hotel</a> or similar. Free evening in Tokyo.</span>, meal: {b: "Hotel", l: "Farmer & President Lunch", d: "Self-arranged"}, hotel: <span><a href="https://www.princehotels.com/sunshine/zh-hant/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">Sunshine City Prince Hotel</a> or similar</span> },
+                    d5: { t: "Tokyo → Taipei", am: "Free time in Tokyo city for shopping and sightseeing.", pm: "Evening departure to Tokyo Narita Airport. Take Tigerair Taiwan IT 203 (19:30-22:35) back to Taipei.", meal: {b: "Hotel", l: "Self-arranged", d: "Self-arranged"}, hotel: "Sweet Home" },
+                    noteTitle: "Important Notes", notes: ["The Glamping on Sep 14 features 3 large tents for our group. Please be aware there may be mixed-gender sleeping arrangements, but each tent is spacious and features individual double beds.", "The rice harvesting experiences will be cancelled in case of rain."],
+                    tags: { am: "AM", pm: "PM", lunch: "LUNCH", night: "NIGHT", stay: "STAY", sight: "SIGHT", breakfast: "Breakfast", dinner: "Dinner" }
+                },
+                info: { title: "Visual Gallery", flight: "Tigerair Taiwan Flights", flightNote: "*Actual flights are subject to group confirmation.", 
+                     important: "Important Travel Notes", 
+                     i1: "Insurance: Liability insurance 2.5 million, medical 200,000.",
+                    i2: "Accommodation: Sep 14 Glamping uses 3 large tents, possible mixed-gender. (Individual double beds provided).",
+                    i3: "Itinerary: Outdoor activities (e.g., harvesting) are subject to weather and may be cancelled if raining.",
+                    i4: "Dietary: Please inform us at least 5 days prior for any allergies or special requirements.",
+                    /* Gallery Translations */
+                    gallery: [
+                        { title: "Nagatoro Cruise", desc: "Experience the spectacular gorge scenery" },
+                        { title: "Kusatsu Onsen", desc: "Top 3 hot spring in Japan" },
+                        { title: "Glamping BBQ", desc: "Outdoor feast under the stars" },
+                        { title: "Asamayama Brewing", desc: "Hands-on 'Kaii-re' and harvesting" },
+                        { title: "Karuizawa 1130", desc: "Elegant nature resort experience" },
+                        { title: "Komoro Winery", desc: "Stroll in the lush green winery" },
+                        { title: "President Lunch", desc: "Deep exchange with artisans" },
+                        { title: "Machida Brewery", desc: "Explore Gunma's #1 Gold Medal brewery" }
+                    ],
+                    flightTable: { outbound: "Outbound", return: "Return", taipei: "Taipei", osaka: "Tokyo Narita" }
+                },
+                faq: { title: "FAQ",
+                    q1: "Does the fee include everything?", a1: "Yes. Includes flights, accommodation, meals, guide service fee, transport, and immersive experiences at four locations.",
+                    q2: "What is the Glamping arrangement?", a2: "We booked 3 large tents. Due to limits, mixed-gender sharing is possible, but each tent features spacious individual double beds.",
+                    q3: "Will harvesting be cancelled if it rains?", a3: "Yes, for safety and quality, the harvesting experiences will be cancelled in case of rain.",
+                    q4: "Is the brewery experience just a tour?", a4: "No! Includes Kaii-re stirring experience, night tour after-party, rice harvesting, and exclusive pairing lunches.",
+                    q5: "What is the group size?", a5: "Carefully controlled to 16-18 adults. Full deposit refund if minimum not reached.",
+                    q6: "Can Early Bird and Double Booking discounts be used together?", a6: "No. Plan A and Plan B are independent promotions. Please select one.",
+                    q7: "Is there a single supplement fee?", a7: "Yes. Single room occupancy requires an additional NT$10,000. If you are willing to share a twin room with a same-gender traveler, no extra fee is needed."
+                },
+                pricing: { countdown: "Early Bird Countdown!", title: "Pricing & Booking", sub: "Limited to 16-18 seats! Experience true craftsmanship.",
+                    official: "Official Price (Twin)", early: "Plan A: Early Bird", earlyNote: "Limited", double: "Plan B: Double Promo", doubleNote: "$1,000 Off per person",
+                    joinLocal: "", joinDesc: "", finalPrice: "Special Price:", perPerson: "/ person",
+                    note: "* This is a reference quote. Final price depends on the specialist's invoice.", bonus: "", bonusDesc: "",
+                    btnLine: "Consult via LINE", btnFb: "Facebook Consultation", btnIg: "Instagram Consultation", btnCall: "Call Us (02-2700-0903)", btnSeminar: "Seminar Registration", btnSeminarSub: "NT$ 200 / person (Includes 3 sakes)",
+                    timeUnits: { d: "d", h: "h", m: "m", s: "s" },
+                    modalTitle: "Select Payment Method", credit: "Credit Card", creditNote: "Consult staff for credit card", transfer: "Bank Transfer"
+                },
+                footer: { desc: "SAKEMARU East Japan Artisan Pilgrimage.\nTo ensure smooth execution, we will adjust the itinerary if necessary based on the Standard Contract and passenger rights.",
+                    contact: "Contact", tel: "Tel", addr: "Address", addrVal: "No. 226, Ruian St., Da’an Dist., Taipei City", official: "Official Site", partner: "Ri-Shen Travel", license: "License No. North 2190 · Type A 7830",
+                    note: "Notes", insure: "Liability Insurance 2.5M, Medical 200K.", age: "Estimated 16-18 people.",
+                    copy: "© 2026 SAKEMARU Sake Tour. All rights reserved.", design: "Design by Lion Day Co."
+                },
+                seminar: { tag: "SAKEMARU Exclusive", title: "East Japan Tour | Pre-trip Seminar", sub: "Taste selected beverages and preview exclusive experiences to help you embark with peace of mind.",
+                    f1: "Tasting Fine Beverages", f2: "Live Interaction", f3: "Limited Seats",
+                    infoTitle: "Event Info", time: "Time", timeVal: "To be announced", loc: "Location", locVal: "No. 226, Ruian St., Da’an Dist., Taipei", fee: "Fee", feeVal: "NT$ 200 / person (Includes 3 sakes)",
+                    highlightTitle: "Highlights", h1: "Preview of Visits: Taste Asamayama, Hijiri, and Machida.", h2: "In-depth Analysis: Detailed breakdown including harvesting and glamping.", h3: "Clear Doubts: Face-to-face Q&A about accommodations and meals.",
+                    formTitle: "Register Now", back: "Back to Home"
+                },
+                card: "{Credit Card +2%}"
+            },
+            'ja': {
+                nav: { language: "言語", highlights: "ツアーの魅力", breweries: "4つの醸造所巡り", testimonials: "参加者の声", itinerary: "スケジュール", pricing: "料金プラン", faq: "よくあるご質問", seminar: "説明会予約", book: "今すぐ予約" },
+                hero: { subtitle: "SAKEMARU 2026 秋限定ツアー", title: "稲穂から星空へ：東日本職人没入旅", sub: "5日間｜4つの醸造所巡り × ペアリング × グランピング", desc: "16-18名様限定｜観光客の枠を超え、醸造家の日常へ", date: "2026/09/12（土） - 09/16（水）", explore: "ツアー詳細", reserve: "先行予約", seminarBtn: "説明会に申し込む", seminarBtnSub: "NT$ 200 / 人 (3種のテイスティング付)" },
+                highlights: { title: "テーマ：稲穂から星空へ", desc: "「今回は味わうだけでなく、自ら醸造に参加する。」\n黄金色の稲穂を刈り取り、夜は星空の下で蔵元とグラスを交わす。伝統的な日本酒の繊細さから、自然派ワイナリーの緑豊かな微酔いまで。これは単なる観光ではなく、日本の醸造家の日常に深く入り込む五感の対話です。", 
+                     f1: { t: "源流への手：大地から酒グラスへ", d: "ガラス越しの見学ではありません！浅間山酒造では希少な「四季醸造」を行っているため、冬以外の時期でも実際の醸造工程を見学でき、蔵元の指導の下、もろみを混ぜる「櫂入れ」を体験できます。専用の稲刈り体験と合わせ、一粒の米が一滴の酒になる感動を体感してください。" },
+                    f2: { t: "風土の味：和洋の美学を越えて", d: "旅の中では特別なペアリングの宴をいくつかご用意。浅間山酒造の蔵元と同席する特別なペアリングランチや、稲刈り後に地元農家と交流する機会も。さらに、小諸ワイナリーを訪れ、長野県特有のテロワールを味わい、日本酒とワインが織りなす層の深さを楽しみます。" },
+                    f3: { t: "星夜の対話：職人との密な語らい", d: "常識を打ち破り、聖酒造の蔵元と星空の下でグランピング！BBQを楽しみながら友人のように語り合います。さらに、静寂に包まれた夜の酒蔵を特別に見学し、夜ならではの生命力を感じます。" },
+                    f4: { t: "少人数限定：16-18名様", d: "最も深い交流と体験の質を確保するため、16～18名の大人限定としています。単なる「飲む人」から「参加する人」へとアップグレードする貴重な機会です。" }
+                },
+                breweries: { title: "4つの醸造所巡り", desc: "和と洋を越え、地元の風土を深く感じる職人体験。", 
+                     b1: { name: "浅間山酒造", desc: "「四季醸造」により、醸造期以外でも工程を見学でき、「櫂入れ」も体験。専用の稲刈り体験（※雨天中止）や、蔵元との特別なペアリングランチも。", tag: "醸造＆稲刈り体験" },
+                    b2: { name: "聖酒造", desc: "群馬県のBlissful GardenでのグランピングBBQ後、夜に酒蔵を特別見学。蔵内で二次会を開催し、静寂の中での微酔いを楽しみます。", tag: "夜の特別見学" },
+                    b3: { name: "町田酒造", desc: "SAKETIME群馬県第1位。初の女性杜氏・町田恵美氏が率い、全国新酒鑑評会で9年間で7回の金賞を受賞。夫婦で奇跡を醸造する注目の蔵を深く見学します。", tag: "金賞蔵見学" },
+                    b4: { name: "小諸ワイナリー", desc: "長野県小諸市の美しいワイナリー。壮大な自然の中で緑豊かなブドウ畑を散策し、日本のワイン造りを学び、長野のテロワールを味わいます。", tag: "自然派ワイナリー" }
+                },
+                testimonials: { 
+                     title: "前回の感動の声", 
+                     desc: "過去のSAKEMARU職人巡礼ツアー参加者の声をお聞きください。",
+                    reviews: [
+                        { name: "情熱の蔵人体験者", tag: "2026/03 参加者", text: "蒸した米を自分でほぐして酒タンクに入れるなんて思ってもいませんでした！短い時間でしたが、出来上がるお酒がすでに楽しみです。すっかり蔵人になった気分でした😆", image: "https://i.postimg.cc/SQ2R1kYT/gan-dong-hui-kui-re-xue-cang-ren-ti-yan-zhe.jpg" },
+                        { name: "深い文化の探求者", tag: "2026/03 参加者", text: "100年続く酒蔵を訪れ、醸造プロセスを体験することで、日本酒文化と日本食のつながりをより深く理解でき、時代ごとの醸造家の努力に触れることができました。", image: "https://i.postimg.cc/8kJcXNf3/gan-dong-hui-kui-shen-du-wen-hua-tan-suo-zhe.jpg" },
+                        { name: "地方酒蔵ファン", tag: "2026/03 参加者", text: "有名な銘柄をたくさん飲んだ後、地域に根ざした小さな酒蔵に出会えたのは素晴らしい経験でした。見学や試飲を通じて社長や杜氏と直接交流し、酒造りへのこだわりを聞けたのは本当に良かったです。", image: "https://i.postimg.cc/Rh2qVb6V/gan-dong-hui-kui-de-fang-jiu-zao-ai-hao-zhe.jpg" }
+                    ]
+                },
+                itinerary: { title: "5日間ディープツアースケジュール", 
+                     d1: { t: "台北 → 東京成田 → 長瀞ライン下り → 軽井沢", am: "桃園空港集合、タイガーエア台湾 IT 200便で東京成田へ (06:35-11:00)。", pm: <span>到着後、すぐに【<a href="https://www.japan.travel/tw/experiences-in-japan/4285/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">長瀞ライン下り</a>】へ向かい、奇岩と壮大な渓谷美を堪能します。</span>, night: <span>【<a href="https://www.karuizawaclub.co.jp/hotel1130/ct/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">軽井沢 1130 ホテル</a>等】にチェックイン。ホテル内でドリンク付きの豪華ディナー。</span>, meal: {b: "X", l: "各自", d: "ホテルディナー(ドリンク付)"}, hotel: <span><a href="https://www.karuizawaclub.co.jp/hotel1130/ct/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">軽井沢 1130 ホテル</a> 又は同等クラス</span> },
+                    d2: { t: "浅間山醸造/稲刈り体験 → 草津温泉", am: <span>★特別体験【<a href="https://tw.sakemaru.me/blogs/%E9%85%92%E9%80%A0/%E6%B5%85%E9%96%93%E9%85%92%E9%80%A0" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">浅間山醸造体験＆見学</a>】：ディープな体験がスタート。【稲刈り体験】も（※雨天中止）。</span>, l_text: "浅間山の蔵元との特別なペアリングランチ。", pm: <span>日本三名泉の一つ【<a href="https://www.japan.travel/hk/spot/1518/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">草津温泉</a>】へ。古い温泉街の風情を楽しみます。</span>, stay: <span>高級ホテル【<a href="https://dormy-hotels.com/resort/hotels/la_kusatsu/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">ラビスタ草津ヒルズ</a>等】にチェックイン。ドリンク付きの豪華ディナー。</span>, meal: {b: "ホテル", l: "蔵元とのペアリングランチ", d: "ホテルディナー(ドリンク付)"}, hotel: <span><a href="https://dormy-hotels.com/resort/hotels/la_kusatsu/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">ラビスタ草津ヒルズ</a> 又は同等クラス</span> },
+                    d3: { t: "小諸ワイナリー → 旧軽井沢銀座通り → グランピング & 聖酒造", am: <span>午前中は緑豊かな【<a href="https://mannswines.com/winery/komoro/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">小諸ワイナリー</a>】を見学。</span>, l_text: "昼食は特製弁当または各自で。", sight: <span>午後は【<a href="https://www.japan.travel/hk/spot/671/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">旧軽井沢銀座通り</a>】を散策し、地元のグルメやショッピングを満喫。</span>, night: <span>16:00~17:00頃 群馬県【<a href="https://blissful-g.jp/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">Blissful Garden グランピング</a>】場に到着し、BBQディナー。食後、夜の【<a href="https://tw.sakemaru.me/blogs/%E9%85%92%E9%80%A0/%E8%81%96%E9%85%92%E9%80%A0" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">聖酒造</a>】見学と二次会へ。</span>, meal: {b: "ホテル", l: "特製弁当または各自", d: "グランピングBBQ"}, hotel: <span><a href="https://blissful-g.jp/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">Blissful Garden グランピング</a> (大型テント3張)</span> },
+                    d4: { t: "渋川稲刈り → 町田酒造見学 → 東京都内", am: "午前中は群馬県渋川市で、熱い【渋川稲刈り体験】へ（※雨天中止）。", l_text: "地元農家や蔵元と一緒に温かいランチの機会も。", pm: <span>午後は【<a href="https://tw.sakemaru.me/blogs/%E9%85%92%E9%80%A0/%E7%94%BA%E7%94%B0%E9%85%92%E9%80%A0" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">町田酒造見学</a>】で金賞の技を学びます。その後、東京都内へ。</span>, stay: <span>【<a href="https://www.princehotels.com/sunshine/zh-hant/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">サンシャインシティプリンスホテル</a>等】にチェックイン。夜は自由行動。</span>, meal: {b: "ホテル", l: "農家と蔵元とのランチ", d: "各自（自由行動）"}, hotel: <span><a href="https://www.princehotels.com/sunshine/zh-hant/" target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold hover:underline">サンシャインシティプリンスホテル</a> 又は同等クラス</span> },
+                    d5: { t: "東京 → 台北", am: "日中は東京都内で自由行動。ショッピングやグルメをお楽しみください。", pm: "夕方、東京成田空港へ。タイガーエア台湾 IT 203便 (19:30-22:35) で台北へ。", meal: {b: "ホテル", l: "各自", d: "各自"}, hotel: "暖かい家" },
+                    noteTitle: "重要なご案内", notes: ["9/14のBlissful Gardenグランピングは大型テント3張をご用意し、各テント4〜6名様となります。男女相部屋の可能性がございますが、テント内は広く、独立したダブルベッドをご用意しております。","稲刈り体験は雨天中止となります。予めご了承ください。"],
+                    tags: { am: "午前", pm: "午後", lunch: "昼食", night: "夜", stay: "宿泊", sight: "観光", breakfast: "朝食", dinner: "夕食" }
+                },
+                info: { title: "ギャラリー", flight: "タイガーエア台湾 フライト情報", flightNote: "*実際のフライトは団体予約の確定情報に基づきます。", 
+                     important: "旅行に関する重要なお知らせ", 
+                     i1: "旅行保険：旅行業責任保険250万、医療保険20万に加入済みです。",
+                    i2: "宿泊について：9/14のグランピングは大型テント3張となり、男女相部屋の可能性があります（各独立ダブルベッドをご用意）。",
+                    i3: "スケジュールの変更：屋外体験（稲刈り等）は天候により調整され、雨天時は中止となります。",
+                    i4: "特別なご要望：アレルギーなどの食事制限がある場合は、出発の5日前までにお知らせください。",
+                    /* Gallery Translations */
+                    gallery: [
+                        { title: "長瀞ライン下り", desc: "奇岩と壮大な渓谷美を堪能" },
+                        { title: "草津温泉", desc: "日本三名泉で癒しの時間を" },
+                        { title: "グランピング BBQ", desc: "星空の下でのアウトドアの宴" },
+                        { title: "浅間山醸造体験", desc: "櫂入れや稲刈りを実体験" },
+                        { title: "軽井沢 1130 ホテル", desc: "大自然に囲まれたリゾートステイ" },
+                        { title: "小諸ワイナリー", desc: "緑豊かなワイナリーでテロワールを味わう" },
+                        { title: "蔵元とのランチ", desc: "職人と深く交流する貴重な機会" },
+                        { title: "町田酒造", desc: "群馬第1位の金賞受賞蔵を探求" }
+                    ],
+                    flightTable: { outbound: "往路", return: "復路", taipei: "台北", osaka: "東京成田" }
+                },
+                faq: { title: "よくあるご質問",
+                    q1: "費用にはすべて含まれていますか？", a1: "はい。航空券、宿泊費、食事、ガイドサービス料、交通費、4つの醸造所の体験費用が含まれています。",
+                    q2: "グランピングの宿泊手配はどうなりますか？", a2: "大型テントを3張予約しています。男女相部屋の可能性がありますが、広々としたテント内に独立したダブルベッドをご用意しています。",
+                    q3: "雨天の場合、稲刈りは中止になりますか？", a3: "はい、安全と体験の質を考慮し、雨天の場合は中止とさせていただきます。",
+                    q4: "醸造所体験はただの見学ですか？", a4: "いいえ！櫂入れ体験、夜の見学と二次会、稲刈り、蔵元とのペアリングランチなど、通常のツアーでは味わえない深い体験が含まれています。",
+                    q5: "ツアーの人数制限はありますか？", a5: "最高の体験を提供するため、16〜18名の大人限定としています。最少催行人数に達しない場合は、お支払いいただいた予約金を全額返金いたします。",
+                    q6: "早割とペア割引は併用できますか？", a6: "併用はできません。プランAとプランBは独立したプロモーションとなりますので、どちらか一方をお選びください。",
+                    q7: "1名での申し込みに追加料金はかかりますか？", a7: "はい。1名様1室利用の場合は10,000元の追加料金がかかります。同性のお客様との相部屋（2名1室）をご了承いただける場合は、追加料金は不要です。"
+                },
+                pricing: { countdown: "早割キャンペーン終了間近！", title: "料金プランとご予約", sub: "16-18名様限定！職人の精神に触れ、純粋な風味を味わう。",
+                    official: "通常料金 (2名1室)", early: "プラン A：早割プラン", earlyNote: "限定割引", double: "プラン B：ペア割引", doubleNote: "お一人様 $1,000 オフ",
+                    joinLocal: "", joinDesc: "", finalPrice: "特別価格：", perPerson: "/ 人",
+                    note: "* 本表は参考価格です。最終的な料金は担当者がご提示する見積書に準じます。", bonus: "", bonusDesc: "",
+                    btnLine: "LINEで相談する", btnFb: "Facebookで相談する", btnIg: "Instagramで相談する", btnCall: "電話で相談 (02-2700-0903)", btnSeminar: "説明会に申し込む", btnSeminarSub: "NT$ 200 / 人 (3種のテイスティング付)",
+                    timeUnits: { d: "日", h: "時間", m: "分", s: "秒" },
+                    modalTitle: "お支払い方法を選択", credit: "クレジットカード", creditNote: "カード払いは担当者にご相談ください", transfer: "銀行振込"
+                },
+                footer: { desc: "SAKEMARU 東日本職人没入の旅。\n全ての限定スケジュールを円滑に進行するため、旅行業約款に基づき、お客様の利益を第一に考え、必要に応じてスケジュールを調整する場合がございます。",
+                    contact: "お問い合わせ", tel: "電話", addr: "住所", addrVal: "台北市大安区瑞安街226号", official: "公式サイト", partner: "日紳旅遊", license: "旅行業品質保障協会 第北2190号‧交観甲字 第7830号",
+                    note: "注意事項", insure: "旅行業責任保険250万、医療保険20万", age: "予定催行人数 16-18 人",
+                    copy: "© 2026 SAKEMARU Sake Tour. All rights reserved.", design: "Design by Lion Day Co."
+                },
+                seminar: { tag: "SAKEMARU 限定イベント", title: "東日本職人没入の旅｜説明会予約", sub: "安心して旅に出発していただけるよう、事前テイスティング会を開催します。厳選された銘柄を味わい、限定体験をプレビューしましょう。",
+                    f1: "厳選酒の試飲", f2: "ライブでの質疑応答", f3: "座席数限定",
+                    infoTitle: "イベント情報", time: "日時", timeVal: "近日公開予定", loc: "場所", locVal: "台北市大安区瑞安街226号 (SAKEMARU 瑞安店)", fee: "参加費", feeVal: "NT$ 200 / 人 (3種類の日本酒テイスティング付)",
+                    highlightTitle: "イベントのハイライト", h1: "巡礼の前哨戦：浅間山、聖酒造、町田酒造の代表作を先行テイスティング。", h2: "スケジュールの詳細解説：専門コンサルタントが稲刈りやグランピングなどの見どころを詳しく解説します。", h3: "疑問を解消：宿泊施設や食事についてのあらゆる質問に直接お答えします。",
+                    formTitle: "今すぐ説明会に申し込む", back: "公式サイトへ戻る"
+                },
+                card: "カード利用 +2%"
+            }
+        };
+
+        /* ... (Icons) ... */
+        const IconBase = ({ children, className }) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>{children}</svg>);
+        const Wine = ({ className }) => (<IconBase className={className}><path d="M8 22h8"/><path d="M7 10h10"/><path d="M12 15v7"/><path d="M12 15a5 5 0 0 0 5-5c0-2-.5-4-2-8H9c-1.5 4-2 6-2 8a5 5 0 0 0 5 5Z"/></IconBase>);
+        const MapPin = ({ className }) => (<IconBase className={className}><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></IconBase>);
+        const Train = ({ className }) => (<IconBase className={className}><rect width="16" height="16" x="4" y="3" rx="2"/><path d="M4 11h16"/><path d="M12 3v8"/><path d="m8 19-2 3"/><path d="m18 22-2-3"/><path d="M8 15h0"/><path d="M16 15h0"/></IconBase>);
+        const Calendar = ({ className }) => (<IconBase className={className}><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></IconBase>);
+        const Plane = ({ className }) => (<IconBase className={className}><path d="M2 12h5"/><path d="M13 12v7l-2 1"/><path d="M15.48 5.76a2 2 0 0 1 2.58.26l2.18 2.18a2 2 0 0 1 .26 2.58L15 17l-1 4-3-1-1-6-6-1-1-3 4-1Z"/></IconBase>);
+        const Utensils = ({ className }) => (<IconBase className={className}><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></IconBase>);
+        const BedDouble = ({ className }) => (<IconBase className={className}><path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8"/><path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4"/><path d="M12 4v6"/><path d="M2 18h20"/></IconBase>);
+        const Info = ({ className }) => (<IconBase className={className}><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></IconBase>);
+        const Check = ({ className }) => (<IconBase className={className}><polyline points="20 6 9 17 4 12"/></IconBase>);
+        const ChevronDown = ({ className }) => (<IconBase className={className}><path d="m6 9 6 6 6-6"/></IconBase>);
+        const ChevronUp = ({ className }) => (<IconBase className={className}><path d="m18 15-6-6-6 6"/></IconBase>);
+        const Star = ({ className }) => (<IconBase className={className}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></IconBase>);
+        const Waves = ({ className }) => (<IconBase className={className}><path d="M2 6c.6.5 1.2 1 2.5 1C7 7 7 5 9.5 5c2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 12c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/><path d="M2 18c.6.5 1.2 1 2.5 1 2.5 0 2.5-2 5-2 2.6 0 2.4 2 5 2 2.5 0 2.5-2 5-2 1.3 0 1.9.5 2.5 1"/></IconBase>);
+        const User = ({ className }) => (<IconBase className={className}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></IconBase>);
+        const HelpCircle = ({ className }) => (<IconBase className={className}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></IconBase>);
+        const Phone = ({ className }) => (<IconBase className={className}><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></IconBase>);
+        const Facebook = ({ className }) => (<IconBase className={className}><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></IconBase>);
+        const Instagram = ({ className }) => (<IconBase className={className}><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></IconBase>);
+        const XIcon = ({ className, onClick }) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} onClick={onClick}><path d="M18 6 6 18"/><path d="m6 6 18 18"/></svg>);
+        const Video = ({ className }) => (<IconBase className={className}><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></IconBase>);
+        const Users = ({ className }) => (<IconBase className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></IconBase>);
+        const Home = ({ className }) => (<IconBase className={className}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></IconBase>);
+        const CreditCard = ({ className }) => (<IconBase className={className}><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></IconBase>);
+        const Banknote = ({ className }) => (<IconBase className={className}><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></IconBase>);
+        const Quote = ({ className }) => (<IconBase className={className}><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z" /><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z" /></IconBase>);
+
+        /* --- Components --- */
+        const Modal = ({ isOpen, onClose, children }) => {
+            if (!isOpen) return null;
+            return (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={onClose}>
+                    <div className="bg-white rounded-lg shadow-xl max-w-sm w-full p-6 relative animate-fade-in" onClick={e => e.stopPropagation()}>
+                        <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 p-2"><XIcon className="w-6 h-6" /></button>
+                        {children}
+                    </div>
+                </div>
+            );
+        };
+
+        const AlcoholWarning = () => {
+             return (
+                <div className="alcohol-warning-container">
+                    <img src={WARNING_IMAGE_URL} alt="禁止酒駕" loading="lazy" className="alcohol-warning-img" />
+                    <span className="alcohol-warning-text">禁止酒駕，未滿十八歲禁止飲酒</span>
+                </div>
+            );
+        };
+
+        const Header = ({ onViewChange, currentView, lang, setLang, t }) => {
+            const [isScrolled, setIsScrolled] = useState(false);
+            const [isMenuOpen, setIsMenuOpen] = useState(false);
+            const [isLangOpen, setIsLangOpen] = useState(false);
+            const langMenuRef = useRef(null);
+
+            useEffect(() => { 
+                const h = () => setIsScrolled(window.scrollY > 50); 
+                window.addEventListener('scroll', h); 
+                return () => window.removeEventListener('scroll', h); 
+            }, []);
+
+            /* 處理點擊其他地方關閉語言選單 */
+            useEffect(() => {
+                const handleClickOutside = (event) => {
+                    if (langMenuRef.current && !langMenuRef.current.contains(event.target)) {
+                        setIsLangOpen(false);
+                    }
+                };
+                document.addEventListener("mousedown", handleClickOutside);
+                return () => document.removeEventListener("mousedown", handleClickOutside);
+            }, []);
+
+            const scrollToSection = (id) => { 
+                if (currentView !== 'main') { 
+                    onViewChange('main'); 
+                    setTimeout(() => { const el = document.getElementById(id); if(el) el.scrollIntoView({behavior:'smooth'}); }, 100); 
+                } else { 
+                    const el = document.getElementById(id); 
+                    if(el) el.scrollIntoView({behavior:'smooth'}); 
+                } 
+                setIsMenuOpen(false); 
+            };
+            
+            return ( 
+                <nav className={`fixed w-full z-50 transition-all duration-300 ${isScrolled || currentView === 'seminar' || currentView === 'payment' ? 'bg-white/95 shadow-md py-2 text-slate-800' : 'bg-transparent py-4 text-white'}`}>
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="flex justify-between items-center">
+                            <div className="flex items-center space-x-2 cursor-pointer" onClick={() => onViewChange('main')}>
+                                <img src={LOGO_URL} alt="SAKEMARU Logo" className="h-12 object-contain" />
+                            </div>
+                            
+                            <div className="hidden md:flex space-x-4 lg:space-x-6 text-sm font-medium tracking-wide items-center relative z-[100]">
+                                <button onClick={() => scrollToSection('highlights')} className="hover:text-amber-600 transition-colors whitespace-nowrap">{t.nav.highlights}</button>
+                                <button onClick={() => scrollToSection('breweries')} className="hover:text-amber-600 transition-colors whitespace-nowrap">{t.nav.breweries}</button>
+                                <button onClick={() => scrollToSection('testimonials')} className="hover:text-amber-600 transition-colors whitespace-nowrap">{t.nav.testimonials}</button>
+                                <button onClick={() => scrollToSection('itinerary')} className="hover:text-amber-600 transition-colors whitespace-nowrap">{t.nav.itinerary}</button>
+                                <button onClick={() => scrollToSection('pricing')} className="hover:text-amber-600 transition-colors whitespace-nowrap">{t.nav.pricing}</button>
+                                <button onClick={() => scrollToSection('faq')} className="hover:text-amber-600 transition-colors whitespace-nowrap">{t.nav.faq}</button>
+                                <button onClick={() => onViewChange('seminar')} className={`px-2 lg:px-3 py-1 rounded transition-colors border border-amber-600 text-amber-600 hover:bg-amber-50 whitespace-nowrap ${currentView === 'seminar' ? 'bg-amber-50 ring-2 ring-amber-200' : ''}`}>{t.nav.seminar}</button>
+                                
+                                {/* 電腦版語言下拉選單 */}
+                                <div className="relative" ref={langMenuRef}>
+                                    <button onClick={() => setIsLangOpen(!isLangOpen)} className="flex items-center gap-1 px-2 py-1 hover:text-amber-600 focus:outline-none whitespace-nowrap">
+                                        🌐 {t.nav.language}
+                                    </button>
+                                    {isLangOpen && (
+                                        <div className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-xl py-2 border border-gray-100 overflow-hidden">
+                                            <button onClick={() => { setLang('zh-TW'); setIsLangOpen(false); }} className={`block w-full text-left px-4 py-2 text-sm hover:bg-amber-50 ${lang === 'zh-TW' ? 'text-amber-600 font-bold' : 'text-slate-700'}`}>繁體中文</button>
+                                            <button onClick={() => { setLang('ja'); setIsLangOpen(false); }} className={`block w-full text-left px-4 py-2 text-sm hover:bg-amber-50 ${lang === 'ja' ? 'text-amber-600 font-bold' : 'text-slate-700'}`}>日本語</button>
+                                            <button onClick={() => { setLang('en'); setIsLangOpen(false); }} className={`block w-full text-left px-4 py-2 text-sm hover:bg-amber-50 ${lang === 'en' ? 'text-amber-600 font-bold' : 'text-slate-700'}`}>English</button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <button onClick={() => scrollToSection('pricing')} className="px-3 lg:px-4 py-2 bg-amber-700 text-white rounded hover:bg-amber-800 transition-colors whitespace-nowrap">{t.nav.book}</button>
+                            </div>
+
+                            <div className="md:hidden flex items-center gap-4">
+                                <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="p-2">
+                                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={isMenuOpen ? "M6 18L18 6M6 6l12 12" : "M4 6h16M4 12h16M4 18h16"} />
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {/* 手機版語言切換與選單，特別增加 pb-40 避免被底部警語擋住 */}
+                    {isMenuOpen && (
+                        <div className="md:hidden bg-white text-slate-800 absolute w-full shadow-xl z-50 h-auto max-h-[65vh] overflow-y-auto pb-6">
+                            <div className="px-4 pt-2 space-y-2 pb-16">
+                                <button onClick={() => scrollToSection('highlights')} className="block w-full text-left px-3 py-2 text-base font-medium border-b border-gray-100">{t.nav.highlights}</button>
+                                <button onClick={() => scrollToSection('breweries')} className="block w-full text-left px-3 py-2 text-base font-medium border-b border-gray-100">{t.nav.breweries}</button>
+                                <button onClick={() => scrollToSection('testimonials')} className="block w-full text-left px-3 py-2 text-base font-medium border-b border-gray-100">{t.nav.testimonials}</button>
+                                <button onClick={() => scrollToSection('itinerary')} className="block w-full text-left px-3 py-2 text-base font-medium border-b border-gray-100">{t.nav.itinerary}</button>
+                                <button onClick={() => scrollToSection('pricing')} className="block w-full text-left px-3 py-2 text-base font-medium border-b border-gray-100">{t.nav.pricing}</button>
+                                <button onClick={() => scrollToSection('faq')} className="block w-full text-left px-3 py-2 text-base font-medium border-b border-gray-100">{t.nav.faq}</button>
+                                <button onClick={() => { onViewChange('seminar'); setIsMenuOpen(false); }} className="block w-full text-left px-3 py-2 text-base font-medium border-b border-gray-100 text-amber-600 bg-amber-50">{t.nav.seminar}</button>
+                                <button onClick={() => scrollToSection('pricing')} className="block w-full text-left px-3 py-2 text-base font-medium text-amber-700 font-bold">{t.nav.book}</button>
+                                
+                                {/* 手機版語言切換 */}
+                                <div className="border-t border-gray-100 mt-2 pt-2">
+                                    <span className="block px-3 py-1 text-xs text-gray-400 font-bold uppercase">🌐 {t.nav.language}</span>
+                                    <button onClick={() => { setLang('zh-TW'); setIsMenuOpen(false); }} className={`block w-full text-left px-4 py-2 text-sm ${lang === 'zh-TW' ? 'text-amber-600 font-bold' : 'text-slate-600'}`}>繁體中文</button>
+                                    <button onClick={() => { setLang('ja'); setIsMenuOpen(false); }} className={`block w-full text-left px-4 py-2 text-sm ${lang === 'ja' ? 'text-amber-600 font-bold' : 'text-slate-600'}`}>日本語</button>
+                                    <button onClick={() => { setLang('en'); setIsMenuOpen(false); }} className={`block w-full text-left px-4 py-2 text-sm ${lang === 'en' ? 'text-amber-600 font-bold' : 'text-slate-600'}`}>English</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </nav>
+            );
+        };
+
+        const Hero = ({ onViewChange, t, lang }) => {
+            return (
+                <div className="relative h-screen min-h-[600px] flex flex-col items-center justify-start pt-[12vh] sm:justify-center sm:pt-0 overflow-hidden">
+                    {/* 使用 object-[center_bottom] 確保手機版時能顯示出帳篷。加入 fetchPriority 讓首圖最快載入 */}
+                    <div className="absolute inset-0">
+                        <img src="https://i.postimg.cc/3xvmp237/zhu-shi-jue-lu-ying-zhao-pian-feng-mian.jpg" alt="Hero" fetchPriority="high" loading="eager" decoding="sync" className="w-full h-full object-cover object-[center_bottom] md:object-center" />
+                        <div className="absolute inset-0 hero-gradient"></div>
+                    </div>
+                    
+                    {/* 響應式排版，完美保證單行不斷行。 */}
+                    <div className="relative z-10 text-center px-4 w-full flex flex-col items-center mt-6 sm:mt-0">
+                        <span className={`block text-amber-400 tracking-[0.2em] uppercase mb-2 md:mb-4 text-[3.5vw] sm:text-base font-semibold animate-fade-in-up ${lang === 'en' ? 'whitespace-normal px-4 text-[12px] break-words' : 'whitespace-nowrap'}`}>
+                            {t.hero.subtitle}
+                        </span>
+                        
+                        {/* 英文使用一般排版換行，中日文使用強制一行 clamp 防破版 */}
+                        {lang === 'en' ? (
+                            <h1 className="text-[1.35rem] sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-2 md:mb-5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] leading-tight w-full text-white px-2 whitespace-normal break-words">
+                                {t.hero.title}
+                            </h1>
+                        ) : (
+                            <h1 className="font-bold mb-3 md:mb-5 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] leading-snug md:leading-tight w-full whitespace-nowrap text-[clamp(16px,6vw,60px)] text-white">
+                                {t.hero.title}
+                            </h1>
+                        )}
+                        
+                        {/* 英文使用一般排版換行，中日文使用強制一行 clamp 防破版 */}
+                        {lang === 'en' ? (
+                            <p className="japanese-font font-normal text-sm sm:text-2xl md:text-3xl mb-3 md:mb-6 block text-gray-100 px-4 whitespace-normal break-words drop-shadow-md">
+                                {t.hero.sub}
+                            </p>
+                        ) : (
+                            <p className="japanese-font font-normal mb-4 md:mb-6 block text-gray-100 whitespace-nowrap text-[clamp(12px,4vw,36px)] drop-shadow-md">
+                                {t.hero.sub}
+                            </p>
+                        )}
+                        
+                        <div className="h-px w-16 md:w-24 bg-amber-400 mx-auto my-2 md:my-5"></div>
+                        
+                        {/* 英文使用一般排版換行，中日文使用強制一行 clamp 防破版 */}
+                        {lang === 'en' ? (
+                            <p className="font-light mb-5 md:mb-8 tracking-wide text-gray-200 px-4 leading-relaxed text-xs sm:text-xl whitespace-normal break-words drop-shadow-md">
+                                {t.hero.desc}
+                                <span className="block mt-1 md:mt-3 text-amber-300 font-medium text-xs md:text-2xl">
+                                    {t.hero.date}
+                                </span>
+                            </p>
+                        ) : (
+                            <p className="font-light mb-6 md:mb-8 tracking-wide text-gray-200 leading-relaxed flex flex-col items-center justify-center whitespace-nowrap text-[clamp(10px,3.5vw,24px)] drop-shadow-md">
+                                {t.hero.desc}
+                                <span className="block mt-2 md:mt-3 text-amber-300 font-medium whitespace-nowrap text-[clamp(12px,4vw,28px)]">
+                                    {t.hero.date}
+                                </span>
+                            </p>
+                        )}
+                        
+                        {/* 按鈕區塊：電腦版為一橫排，手機版為直排 */}
+                        <div className="flex flex-col lg:flex-row gap-3 md:gap-4 justify-center items-center w-full px-4 sm:w-[80%] lg:w-auto">
+                            <button onClick={() => document.getElementById('itinerary').scrollIntoView({behavior: 'smooth'})} className="w-full lg:w-auto px-6 py-2.5 md:px-8 md:py-3 border border-white text-white hover:bg-white hover:text-slate-900 transition-all duration-300 rounded-sm uppercase tracking-widest text-sm md:text-base whitespace-nowrap">{t.hero.explore}</button>
+                            <button onClick={() => document.getElementById('pricing').scrollIntoView({behavior: 'smooth'})} className="w-full lg:w-auto px-6 py-2.5 md:px-8 md:py-3 bg-amber-700 text-white hover:bg-amber-800 transition-all duration-300 rounded-sm uppercase tracking-widest text-sm md:text-base shadow-lg whitespace-nowrap">{t.hero.reserve}</button> 
+                            <button onClick={() => onViewChange('seminar')} className="w-full lg:w-auto px-6 py-2.5 md:px-8 md:py-3 border border-white/80 text-white hover:bg-white hover:text-amber-800 transition-all duration-300 rounded-sm uppercase tracking-widest text-sm md:text-base flex items-center justify-center gap-2 backdrop-blur-sm animate-pulse whitespace-nowrap"><span>{t.hero.seminarBtn}</span><Users className="w-5 h-5" /></button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const Highlights = ({ t }) => {
+            const features = [
+                { icon: <User className="w-8 h-8 text-amber-700" />, title: t.highlights.f1.t, desc: t.highlights.f1.d },
+                { icon: <Waves className="w-8 h-8 text-amber-700" />, title: t.highlights.f2.t, desc: t.highlights.f2.d },
+                { icon: <Wine className="w-8 h-8 text-amber-700" />, title: t.highlights.f3.t, desc: t.highlights.f3.d },
+                { icon: <Star className="w-8 h-8 text-amber-700" />, title: t.highlights.f4.t, desc: t.highlights.f4.d }
+            ];
+            return (
+                <section id="highlights" className="py-20 bg-stone-50 relative">
+                    <div className="absolute inset-0 bg-pattern"></div>
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                        <div className="text-center mb-16">
+                            <span className="text-amber-700 font-medium tracking-widest uppercase text-sm">Core Values</span>
+                            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mt-2">{t.highlights.title}</h2>
+                            <p className="mt-4 text-slate-600 max-w-2xl mx-auto">{t.highlights.desc}</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                            {features.map((f, index) => (
+                                <div key={index} className="bg-white p-8 rounded-lg shadow-sm hover:shadow-xl transition-shadow duration-300 border-t-4 border-amber-700 group">
+                                    <div className="mb-4 transform group-hover:scale-110 transition-transform duration-300">{f.icon}</div>
+                                    <h3 className="text-xl font-bold text-slate-900 mb-3">{f.title}</h3>
+                                    <p className="text-slate-600 leading-relaxed text-sm">{f.desc}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const Breweries = ({ t }) => {
+            const breweries = [
+                { ...t.breweries.b1, image: "https://i.postimg.cc/jqGtkfzC/Chat-GPT-Image-2026nian5yue9ri-01-13-09.png", imgClass: "object-center" }, 
+                { ...t.breweries.b2, image: "https://i.postimg.cc/XvbYpC2Z/S-32915727.jpg", imgClass: "object-[center_40%]" }, 
+                { ...t.breweries.b3, image: "https://i.postimg.cc/y8Zc907H/si-zhong-wei-xun-xun-li-ting-tian.jpg", imgClass: "object-top" }, 
+                { ...t.breweries.b4, image: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80", imgClass: "object-bottom" } 
+            ];
+            return (
+                <section id="breweries" className="py-20 bg-slate-900 text-white">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="text-center mb-16">
+                            <span className="text-amber-400 font-medium tracking-widest uppercase text-sm">Exclusive Experience</span>
+                            <h2 className="text-3xl md:text-4xl font-bold mt-2 text-white">{t.breweries.title}</h2>
+                            <div className="h-1 w-20 bg-amber-500 mx-auto mt-6"></div>
+                            <p className="mt-4 text-slate-400 max-w-2xl mx-auto">{t.breweries.desc}</p>
+                        </div>
+                        <div className="space-y-12">
+                            {breweries.map((b, index) => (
+                                <div key={index} className={`flex flex-col ${index % 2 === 1 ? 'md:flex-row-reverse' : 'md:flex-row'} gap-8 md:gap-12 items-center`}>
+                                    <div className="w-full md:w-1/2 overflow-hidden rounded-lg shadow-2xl relative group">
+                                         <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-500 z-10"></div>
+                                        <img src={b.image} alt={b.name} loading="lazy" decoding="async" className={`w-full h-72 md:h-[480px] object-cover transform hover:scale-105 transition-transform duration-700 ${b.imgClass || 'object-center'}`} onError={(e) => {e.target.src='https://via.placeholder.com/800x600/334155/ffffff?text=' + b.name}} />
+                                    </div>
+                                    <div className="w-full md:w-1/2 space-y-4">
+                                        <div className="inline-block px-3 py-1 border border-amber-500 text-amber-400 text-xs tracking-wider uppercase rounded-full mb-2">{b.tag}</div>
+                                        <h3 className="text-3xl font-bold font-serif">{b.name}</h3>
+                                        <p className="text-slate-400 text-sm uppercase tracking-wide">{b.sub || b.name}</p>
+                                        <p className="text-slate-300 leading-relaxed text-lg">{b.desc}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        /* Testimonials (客戶反饋) */
+        const Testimonials = ({ t }) => {
+            return (
+                <section id="testimonials" className="py-20 bg-stone-100 border-t border-stone-200">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="text-center mb-16">
+                            <span className="text-amber-700 font-medium tracking-widest uppercase text-sm">Guest Reviews</span>
+                            <h2 className="text-3xl md:text-4xl font-bold mt-2 text-slate-900">{t.testimonials.title}</h2>
+                            <div className="h-1 w-20 bg-amber-500 mx-auto mt-6"></div>
+                            <p className="mt-4 text-slate-600 max-w-2xl mx-auto">{t.testimonials.desc}</p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            {t.testimonials.reviews.map((review, index) => (
+                                <div key={index} className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow duration-300 relative border border-stone-100 overflow-hidden flex flex-col">
+                                    <div className="aspect-[4/3] w-full relative overflow-hidden bg-stone-200">
+                                        <img src={review.image} alt="Guest Experience" loading="lazy" decoding="async" className={review.imgClass || "w-full h-full object-cover object-top"} />
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                                    </div>
+                                    <div className="p-6 flex-grow flex flex-col relative z-10 bg-white">
+                                        <Quote className="w-8 h-8 text-amber-100 absolute top-4 right-4" />
+                                        <div className="flex items-center gap-1 mb-4 text-amber-500">
+                                            <Star className="w-4 h-4 fill-current" /><Star className="w-4 h-4 fill-current" /><Star className="w-4 h-4 fill-current" /><Star className="w-4 h-4 fill-current" /><Star className="w-4 h-4 fill-current" />
+                                        </div>
+                                        <p className="text-slate-600 leading-relaxed text-sm italic mb-6 flex-grow">"{review.text}"</p>
+                                        <div className="flex items-center gap-3 mt-auto">
+                                            <div className="w-10 h-10 bg-amber-700 rounded-full flex items-center justify-center text-white font-bold shrink-0">{review.name.charAt(0) || 'G'}</div>
+                                            <div>
+                                                <h4 className="text-slate-900 font-bold text-sm">{review.name}</h4>
+                                                <span className="text-xs text-slate-500 uppercase tracking-wider">{review.tag}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const Itinerary = ({ t, lang }) => {
+            const [openDay, setOpenDay] = useState(0);
+
+            const daysData = [t.itinerary.d1, t.itinerary.d2, t.itinerary.d3, t.itinerary.d4, t.itinerary.d5];
+
+            return (
+                <section id="itinerary" className="py-20 bg-stone-50">
+                    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="text-center mb-12">
+                            <span className="text-amber-700 font-medium tracking-widest uppercase text-sm">Travel Itinerary</span>
+                            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mt-2">{t.itinerary.title}</h2>
+                        </div>
+                        <div className="space-y-6">
+                            {daysData.map((day, index) => (
+                                <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden border-l-4 border-amber-700">
+                                    <button onClick={() => setOpenDay(openDay === index ? null : index)} className="w-full flex items-center justify-between p-6 text-left hover:bg-stone-50 transition-colors">
+                                        <div className="flex items-center gap-4">
+                                            <span className="bg-slate-900 text-white px-3 py-1 rounded text-sm font-bold tracking-wider">Day {index + 1}</span>
+                                            <h3 className="text-lg md:text-xl font-bold text-slate-800">{day.t}</h3>
+                                        </div>
+                                        {openDay === index ? <ChevronUp className="text-slate-400 w-6 h-6" /> : <ChevronDown className="text-slate-400 w-6 h-6" />}
+                                    </button>
+                                    {openDay === index && (
+                                        <div className="px-6 pb-6 pt-2 bg-stone-50/50 border-t border-gray-100">
+                                            <div className="space-y-4 ml-2 md:ml-12 border-l-2 border-slate-200 pl-6 py-2">
+                                                {day.am && <div className="relative"><span className="absolute -left-[31px] top-1 w-2.5 h-2.5 rounded-full bg-amber-500 ring-4 ring-stone-100"></span><span className="text-xs font-bold text-amber-700 uppercase tracking-wider block mb-1">{t.itinerary.tags.am}</span><p className="text-slate-700">{day.am}</p></div>}
+                                                {day.l_text && <div className="relative"><span className="absolute -left-[31px] top-1 w-2.5 h-2.5 rounded-full bg-amber-500 ring-4 ring-stone-100"></span><span className="text-xs font-bold text-amber-700 uppercase tracking-wider block mb-1">{t.itinerary.tags.lunch}</span><p className="text-slate-700">{day.l_text}</p></div>}
+                                                {day.sight && <div className="relative"><span className="absolute -left-[31px] top-1 w-2.5 h-2.5 rounded-full bg-amber-500 ring-4 ring-stone-100"></span><span className="text-xs font-bold text-amber-700 uppercase tracking-wider block mb-1">{t.itinerary.tags.sight}</span><p className="text-slate-700">{day.sight}</p></div>}
+                                                {day.pm && <div className="relative"><span className="absolute -left-[31px] top-1 w-2.5 h-2.5 rounded-full bg-amber-500 ring-4 ring-stone-100"></span><span className="text-xs font-bold text-amber-700 uppercase tracking-wider block mb-1">{t.itinerary.tags.pm}</span><p className="text-slate-700">{day.pm}</p></div>}
+                                                {day.night && <div className="relative"><span className="absolute -left-[31px] top-1 w-2.5 h-2.5 rounded-full bg-amber-500 ring-4 ring-stone-100"></span><span className="text-xs font-bold text-amber-700 uppercase tracking-wider block mb-1">{t.itinerary.tags.night}</span><p className="text-slate-700">{day.night}</p></div>}
+                                                {day.stay && <div className="relative"><span className="absolute -left-[31px] top-1 w-2.5 h-2.5 rounded-full bg-amber-500 ring-4 ring-stone-100"></span><span className="text-xs font-bold text-amber-700 uppercase tracking-wider block mb-1">{t.itinerary.tags.stay}</span><p className="text-slate-700">{day.stay}</p></div>}
+                                            </div>
+                                            <div className="mt-6 ml-2 md:ml-12 grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-lg border border-gray-200">
+                                                <div><div className="flex items-center gap-2 mb-2 text-slate-900 font-semibold"><Utensils className="w-4 h-4 text-amber-600" /> {lang==='zh-TW'?'餐食':(lang==='ja'?'食事':'Meals')}</div><div className="text-sm text-slate-600 space-y-1"><div className="flex justify-between border-b border-gray-100 py-1"><span>{t.itinerary.tags.breakfast}</span> <span>{day.meal.b}</span></div><div className="flex justify-between border-b border-gray-100 py-1"><span>{t.itinerary.tags.lunch}</span> <span>{day.meal.l}</span></div><div className="flex justify-between py-1"><span>{t.itinerary.tags.dinner}</span> <span>{day.meal.d}</span></div></div></div>
+                                                <div><div className="flex items-center gap-2 mb-2 text-slate-900 font-semibold"><BedDouble className="w-4 h-4 text-amber-600" /> {lang==='zh-TW'?'住宿':(lang==='ja'?'宿泊':'Accommodation')}</div><p className="text-sm text-slate-600">{day.hotel}</p></div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                        <div className="mt-8 p-6 bg-amber-50 border border-amber-200 rounded-lg text-sm text-slate-700 space-y-2">
+                            <h4 className="font-bold text-amber-800 mb-2 flex items-center gap-2"><Info className="w-4 h-4" /> {t.itinerary.noteTitle}</h4>
+                            <ul className="list-disc list-inside space-y-1 pl-2">{t.itinerary.notes.map((n, i) => <li key={i}>{n}</li>)}</ul>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        /* Info Section (Gallery style) */
+        const InfoSection = ({ t }) => {
+             const images = [
+                { ...t.info.gallery[0], src: "https://i.postimg.cc/SKb8GjKp/shi-jue-dao-lan-zhang-jing-you-chuan.jpg" }, 
+                { ...t.info.gallery[1], src: "https://special-trip.net/wp-content/uploads/2022/09/IMG_4502-scaled.jpg" }, 
+                { ...t.info.gallery[2], src: "https://i.postimg.cc/tgGPz7gX/shi-jue-dao-lan-hao-hua-lu-ying.jpg" }, 
+                { ...t.info.gallery[3], src: "https://www.asama-sakagura.co.jp/company/wp-content/themes/company/images/home/bg_top.jpg.webp" }, 
+                { ...t.info.gallery[4], src: "https://www.karuizawaclub.co.jp/hotel1130/ct/ogp.jpg" }, 
+                { ...t.info.gallery[5], src: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" }, 
+                { ...t.info.gallery[6], src: "https://i.postimg.cc/hGRx0hGW/shi-jue-dao-lan-she-zhang-zhuan-shu-wu-yan.jpg" }, 
+                { ...t.info.gallery[7], src: "https://gigaplus.makeshop.jp/onosaketen/images/bnr-ct132.jpg" }  
+            ];
+
+            return (
+                <section id="info" className="py-20 bg-white">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="text-center mb-12">
+                            <h2 className="text-3xl font-bold text-slate-900">{t.info.title}</h2>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                             {images.map((img, idx) => (
+                                <div key={idx} className="relative group overflow-hidden rounded-lg shadow-lg aspect-[4/3] block">
+                                    <img src={img.src} alt={img.title} loading="lazy" decoding="async" className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex flex-col justify-end p-4 text-white opacity-90">
+                                        <h4 className="font-bold text-lg">{img.title}</h4>
+                                        <p className="text-xs text-slate-300">{img.desc}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                         <div className="mt-16 grid grid-cols-1 lg:grid-cols-2 gap-12">
+                            <div>
+                                <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2"><Plane className="text-amber-700 w-6 h-6" /> {t.info.flight}</h3>
+                                <div className="bg-stone-50 rounded-xl p-6 shadow-sm border border-stone-200">
+                                    <div className="space-y-4">
+                                        <div className="flex justify-between items-center border-b border-stone-200 pb-4"><div><span className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded">{t.info.flightTable.outbound}</span><div className="font-bold text-lg mt-1">IT 200</div></div><div className="text-right"><div className="text-slate-900 font-medium">06:35 {t.info.flightTable.taipei}</div><div className="text-slate-500 text-sm">↓</div><div className="text-slate-900 font-medium">11:00 {t.info.flightTable.osaka}</div></div></div>
+                                        <div className="flex justify-between items-center pt-2"><div><span className="bg-slate-200 text-slate-700 text-xs px-2 py-1 rounded">{t.info.flightTable.return}</span><div className="font-bold text-lg mt-1">IT 203</div></div><div className="text-right"><div className="text-slate-900 font-medium">19:30 {t.info.flightTable.osaka}</div><div className="text-slate-500 text-sm">↓</div><div className="text-slate-900 font-medium">22:35 {t.info.flightTable.taipei}</div></div></div>
+                                    </div>
+                                    <p className="text-xs text-slate-400 mt-4">{t.info.flightNote}</p>
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="text-2xl font-bold text-slate-900 mb-6 flex items-center gap-2"><BedDouble className="text-amber-700 w-6 h-6" /> {t.info.important}</h3>
+                                <ul className="space-y-3">
+                                    <li className="flex items-start gap-2 text-sm text-slate-600"><Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" /><span>{t.info.i1}</span></li>
+                                    <li className="flex items-start gap-2 text-sm text-slate-600"><Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" /><span>{t.info.i2}</span></li>
+                                    <li className="flex items-start gap-2 text-sm text-slate-600"><Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" /><span>{t.info.i3}</span></li>
+                                    <li className="flex items-start gap-2 text-sm text-slate-600"><Check className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" /><span>{t.info.i4}</span></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const FAQ = ({ t }) => {
+             const faqs = [
+                { q: t.faq.q1, a: t.faq.a1 },
+                { q: t.faq.q2, a: t.faq.a2 },
+                { q: t.faq.q3, a: t.faq.a3 },
+                { q: t.faq.q4, a: t.faq.a4 },
+                { q: t.faq.q5, a: t.faq.a5 },
+                { q: t.faq.q6, a: t.faq.a6 },
+                { q: t.faq.q7, a: t.faq.a7 }
+            ];
+            
+            return (
+                 <section id="faq" className="py-20 bg-stone-50">
+                    <div className="max-w-4xl mx-auto px-4">
+                        <h2 className="text-3xl font-bold text-center mb-10 text-slate-900">{t.faq.title}</h2>
+                        <div className="grid gap-6">
+                            {faqs.map((item, i) => (
+                                <div key={i} className="bg-white p-6 rounded-lg shadow-sm">
+                                    <h4 className="font-bold text-lg text-slate-800 mb-2 flex items-center gap-2"><HelpCircle className="w-5 h-5 text-amber-600 flex-shrink-0" />{item.q}</h4>
+                                    <p className="text-slate-600 ml-7">{item.a}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                 </section>
+            )
+        }
+
+        const Pricing = ({ onLineClick, onViewChange, t, lang, onOpenPayment }) => {
+            const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+            useEffect(() => {
+                const targetDate = new Date('2026-06-06T23:59:59');
+                const interval = setInterval(() => {
+                    const now = new Date();
+                    const difference = targetDate - now;
+                    if (difference <= 0) { clearInterval(interval); } else {
+                        const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+                        setTimeLeft({ days, hours, minutes, seconds });
+                    }
+                }, 1000);
+                return () => clearInterval(interval);
+            }, []);
+
+            return (
+                <section id="pricing" className="py-20 bg-slate-900 text-white relative overflow-hidden">
+                    <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-amber-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+                    <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+                    <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
+                        {/* 手機版文字縮小、減少 padding，確保秒數不會掉落 */}
+                        <div className="inline-block bg-red-600 text-white px-3 md:px-6 py-2 rounded-full text-[12px] sm:text-sm md:text-base font-bold mb-6 animate-pulse-slow shadow-[0_0_15px_rgba(220,38,38,0.7)] whitespace-nowrap">
+                            {t.pricing.countdown} {String(timeLeft.days).padStart(2,'0')}{t.pricing.timeUnits.d} {String(timeLeft.hours).padStart(2,'0')}{t.pricing.timeUnits.h} {String(timeLeft.minutes).padStart(2,'0')}{t.pricing.timeUnits.m} {String(timeLeft.seconds).padStart(2,'0')}{t.pricing.timeUnits.s}
+                        </div>
+                        <h2 className="text-3xl md:text-5xl font-bold mb-6 serif-font">{t.pricing.title}</h2>
+                        {/* 加入響應式字體大小，避免副標題在小手機上破版 */}
+                        <p className="text-[15px] sm:text-base md:text-lg text-slate-300 mb-10 max-w-2xl mx-auto px-2">{t.pricing.sub}</p>
+                        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 w-full max-w-2xl mx-auto border border-white/20 mb-8">
+                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
+                                <div onClick={onOpenPayment} className="p-4 bg-white/5 rounded border border-white/10 cursor-pointer hover:bg-white/10 transition-colors group">
+                                    <div className="text-slate-400 text-xs uppercase mb-1 group-hover:text-white">{t.pricing.official}</div>
+                                    <div className="text-2xl font-bold">預估 NT$ 59,400 <span className="text-sm text-amber-400 font-normal block mt-1">{t.card}</span></div>
+                                </div>
+                                <div onClick={onOpenPayment} className="p-4 bg-amber-600/20 rounded border border-amber-500/50 relative overflow-hidden cursor-pointer hover:bg-amber-600/30 transition-colors group">
+                                     <div className="absolute top-0 right-0 bg-red-500 text-xs px-2 py-0.5">HOT</div>
+                                    <div className="text-amber-300 text-xs uppercase mb-1 group-hover:text-amber-200">💥 {t.pricing.early}</div>
+                                    <div className="text-2xl font-bold text-amber-400">NT$ 56,430 <span className="text-sm text-white/80 font-normal block mt-1">{t.card}</span></div>
+                                    <div className="text-xs text-amber-200/70 mt-1">{t.pricing.earlyNote}</div>
+                                </div>
+                                <div onClick={onOpenPayment} className="p-4 bg-blue-600/20 rounded border border-blue-500/50 md:col-span-2 cursor-pointer hover:bg-blue-600/30 transition-colors group">
+                                    <div className="text-blue-300 text-xs uppercase mb-1 group-hover:text-blue-200">✨ {t.pricing.double}</div>
+                                    <div className="text-2xl font-bold text-blue-100">NT$ 58,400 <span className="text-sm font-normal text-slate-300">{t.pricing.perPerson}</span> <span className="text-sm text-amber-400 font-normal ml-2">{t.card}</span></div>
+                                    <div className="text-xs text-blue-200/70 mt-1">{t.pricing.doubleNote}</div>
+                                </div>
+                             </div>
+                             <p className="text-xs text-slate-400 mt-4 text-left">{t.pricing.note}</p>
+                        </div>
+                        
+                        <div id="social-contact" className="flex flex-col gap-4 max-w-md mx-auto">
+                             <button onClick={() => onViewChange('seminar')} className="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-lg font-bold text-lg shadow-lg flex flex-col justify-center items-center gap-1 animate-pulse">
+                                <div className="flex items-center gap-2"><Users className="w-6 h-6" /><span>{t.pricing.btnSeminar}</span></div>
+                                <span className="text-xs font-normal opacity-90">{t.pricing.btnSeminarSub}</span>
+                            </button>
+                            <button onClick={onLineClick} className="w-full py-4 bg-[#06c755] hover:bg-[#05b54d] text-white rounded-lg font-bold text-lg transition-all shadow-lg flex justify-center items-center gap-2"><img src="https://upload.wikimedia.org/wikipedia/commons/4/41/LINE_logo.svg" className="w-6 h-6 bg-white rounded-full p-0.5" alt="LINE" /><span>{t.pricing.btnLine}</span></button>
+                             <a href="https://www.facebook.com/sakemaru.tw?locale=zh_TW" target="_blank" rel="noopener noreferrer" className="w-full py-4 bg-[#1877F2] hover:bg-[#166fe5] text-white rounded-lg font-bold text-lg transition-all shadow-lg flex justify-center items-center gap-2"><Facebook className="w-6 h-6" /><span>{t.pricing.btnFb}</span></a>
+                            <a href="https://www.instagram.com/sakemaru_tw/" target="_blank" rel="noopener noreferrer" className="w-full py-4 bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F77737] hover:opacity-90 text-white rounded-lg font-bold text-lg transition-all shadow-lg flex justify-center items-center gap-2"><Instagram className="w-6 h-6" /><span>{t.pricing.btnIg}</span></a>
+                            <div className="w-full py-4 bg-slate-700 text-white rounded-lg font-bold text-lg shadow-lg flex justify-center items-center gap-2 cursor-default"><Phone className="w-6 h-6" /><span>{t.pricing.btnCall}</span></div>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const Footer = ({ t }) => {
+            return (
+                <footer className="bg-stone-900 text-stone-400 py-12 border-t border-stone-800">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div><span className="text-2xl font-bold text-white font-sans tracking-[0.2em]">SAKEMARU</span><p className="mt-4 text-sm leading-relaxed whitespace-pre-line">{t.footer.desc}</p></div>
+                            <div><h4 className="text-white font-bold mb-4">{t.footer.contact}</h4><ul className="space-y-2 text-sm"><li>{t.footer.tel}：02-2700-0903</li><li>{t.footer.addr}：{t.footer.addrVal}</li><li>support@sakemaru.me</li><li><a href="https://sakemaru.me/tw" target="_blank" rel="noopener noreferrer" className="hover:text-amber-500 transition-colors">{t.footer.official}：sakemaru.me/tw</a></li></ul><div className="mt-4 pt-4 border-t border-stone-700"><p className="text-xs text-stone-500">{t.footer.partner}</p><p className="text-xs text-stone-500">{t.footer.license}</p></div></div>
+                            <div><h4 className="text-white font-bold mb-4">{t.footer.note}</h4><ul className="space-y-2 text-xs"><li><strong>{t.footer.insure}</strong></li><li>{t.footer.age}</li></ul></div>
+                        </div>
+                        <div className="border-t border-stone-800 mt-12 pt-8 text-center text-xs flex flex-col md:flex-row justify-between items-center relative">
+                            <span>{t.footer.copy}</span>
+                            <span className="mt-4 md:mt-0 opacity-70">{t.footer.design}</span>
+                        </div>
+                    </div>
+                </footer>
+            );
+        };
+
+        /* --- Seminar Page Component --- */
+        const SeminarPage = ({ onBack, t }) => {
+            useEffect(() => { window.scrollTo(0, 0); }, []);
+
+            return (
+                <div className="min-h-screen bg-stone-50 pt-20 pb-24">
+                    <div className="relative bg-slate-900 text-white py-20 px-4 overflow-hidden">
+                        <div className="max-w-4xl mx-auto relative z-10 text-center">
+                            <span className="inline-block px-3 py-1 border border-amber-400 text-amber-400 rounded-full text-sm mb-4 tracking-wider">{t.seminar.tag}</span>
+                            <h1 className="text-3xl md:text-5xl font-bold mb-6 serif-font">{t.seminar.title}</h1>
+                            <p className="text-lg text-slate-200 mb-8 max-w-2xl mx-auto">{t.seminar.sub}</p>
+                            <div className="flex flex-wrap justify-center gap-4 text-sm font-bold text-amber-300"><span className="flex items-center gap-1"><Wine className="w-4 h-4"/> {t.seminar.f1}</span><span className="flex items-center gap-1"><Video className="w-4 h-4"/> {t.seminar.f2}</span><span className="flex items-center gap-1"><Users className="w-4 h-4"/> {t.seminar.f3}</span></div>
+                        </div>
+                    </div>
+
+                    <div className="max-w-5xl mx-auto px-4 py-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
+                        <div className="space-y-8">
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                                <h3 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2"><Info className="w-5 h-5 text-amber-600"/> {t.seminar.infoTitle}</h3>
+                                <ul className="space-y-4 text-slate-600">
+                                    <li className="flex items-start gap-3"><Calendar className="w-5 h-5 text-slate-400 flex-shrink-0 mt-0.5"/><div><span className="font-bold text-slate-800 block">{t.seminar.time}</span>{t.seminar.timeVal}</div></li>
+                                    <li className="flex items-start gap-3"><MapPin className="w-5 h-5 text-slate-400 flex-shrink-0 mt-0.5"/><div><span className="font-bold text-slate-800 block">{t.seminar.loc}</span>{t.seminar.locVal}</div></li>
+                                    <li className="flex items-start gap-3"><div className="w-5 h-5 flex items-center justify-center text-slate-400 font-serif font-bold">$</div><div><span className="font-bold text-slate-800 block">{t.seminar.fee}</span>{t.seminar.feeVal}</div></li>
+                                </ul>
+                            </div>
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-stone-200"><h3 className="text-xl font-bold text-slate-900 mb-4">{t.seminar.highlightTitle}</h3><ul className="list-disc list-inside space-y-2 text-slate-600"><li>{t.seminar.h1}</li><li>{t.seminar.h2}</li><li>{t.seminar.h3}</li></ul></div>
+                            <div className="rounded-xl overflow-hidden shadow-sm border border-stone-200 h-64"><iframe src="https://www.google.com/maps?q=台北市大安區瑞安街226號&output=embed" width="100%" height="100%" style={{border:0}} allowFullScreen="" loading="lazy"></iframe></div>
+                        </div>
+
+                        <div className="bg-white p-4 rounded-xl shadow-lg border-t-4 border-amber-600 sticky top-24">
+                            <h2 className="text-2xl font-bold text-slate-900 mb-4 text-center">{t.seminar.formTitle}</h2>
+                            <div className="w-full overflow-hidden rounded bg-gray-50 border border-gray-200 iframe-scroll-container" style={{ height: '866px' }}>
+                                {/* Google Form Iframe Container */}
+                                <iframe 
+                                    src={GOOGLE_FORM_SEMINAR_URL}
+                                    width="100%" 
+                                    height="100%" 
+                                    frameBorder="0" 
+                                    marginHeight="0" 
+                                    marginWidth="0"
+                                    title="Google Form Registration"
+                                >
+                                    載入中...
+                                </iframe>
+                            </div>
+                            <div className="text-center mt-4"><button type="button" onClick={onBack} className="text-sm text-slate-500 hover:text-slate-800 flex items-center justify-center gap-1 mx-auto"><Home className="w-4 h-4"/> {t.seminar.back}</button></div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+        
+        const PaymentPage = ({ onBack }) => {
+             useEffect(() => { window.scrollTo(0, 0); }, []);
+             return (
+                <div className="min-h-screen bg-stone-50 pt-24 pb-24 px-4 iframe-scroll-container">
+                    <div className="max-w-3xl mx-auto">
+                        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+                             <div className="bg-slate-900 text-white p-6 flex justify-between items-center">
+                                <h2 className="text-xl font-bold">Payment / 匯款資訊填寫</h2>
+                                <button onClick={onBack}><XIcon className="w-6 h-6 text-white/80 hover:text-white" /></button>
+                             </div>
+                             <div className="w-full bg-white iframe-scroll-container" style={{ height: '1828px' }}>
+                                <iframe src={GOOGLE_FORM_PAYMENT_URL} width="100%" height="100%" frameBorder="0" marginHeight="0" marginWidth="0">Loading...</iframe>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+             );
+        };
+
+        const MainPage = ({ onLineClick, onViewChange, t, lang, onOpenPayment }) => {
+            return (
+                <div className="animate-fade-in">
+                    <Hero onViewChange={onViewChange} t={t} lang={lang} />
+                    <Highlights t={t} />
+                    <Breweries t={t} />
+                    <Testimonials t={t} />
+                    <Itinerary t={t} lang={lang} />
+                    <InfoSection t={t} />
+                    <FAQ t={t} />
+                    <Pricing onLineClick={onLineClick} onViewChange={onViewChange} t={t} lang={lang} onOpenPayment={onOpenPayment} />
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [isModalOpen, setIsModalOpen] = useState(false);
+            const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+            const [currentView, setCurrentView] = useState('main');
+            const [lang, setLang] = useState('zh-TW');
+            const t = translations[lang];
+
+            const handleCreditCardClick = () => {
+                setIsPaymentModalOpen(false);
+                const socialSection = document.getElementById('social-contact');
+                if (socialSection) socialSection.scrollIntoView({ behavior: 'smooth' });
+            };
+
+            const handleTransferClick = () => {
+                setIsPaymentModalOpen(false);
+                setCurrentView('payment');
+            };
+
+            return (
+                <div className={`antialiased selection:bg-amber-200 selection:text-amber-900 ${lang === 'en' ? 'en-font' : ''}`}>
+                    <Header onViewChange={setCurrentView} currentView={currentView} lang={lang} setLang={setLang} t={t} />
+                    {currentView === 'main' && <MainPage onLineClick={() => setIsModalOpen(true)} onViewChange={setCurrentView} t={t} lang={lang} onOpenPayment={() => setIsPaymentModalOpen(true)} />}
+                    {currentView === 'seminar' && <SeminarPage onBack={() => setCurrentView('main')} t={t} />}
+                    {currentView === 'payment' && <PaymentPage onBack={() => setCurrentView('main')} />}
+                    
+                    <Footer t={t} />
+                    <AlcoholWarning />
+
+                    {/* LINE QR Code Modal */}
+                    <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
+                        <div className="text-center"><h3 className="text-xl font-bold text-slate-900 mb-4">加入 LINE 官方帳號</h3><p className="text-sm text-slate-600 mb-4">請掃描下方 QR Code 或點擊按鈕加入好友洽詢席次。</p><div className="bg-white p-2 border border-gray-200 rounded-lg inline-block mb-4"><img src="https://i.postimg.cc/m23nFYZ9/jie-tu-2025-11-12-shang-wu11-08-17.png" alt="LINE QR Code" className="w-48 h-48 object-contain" /></div><a href="https://lin.ee/yNtFdhG" target="_blank" rel="noopener noreferrer" className="block w-full py-3 bg-[#06C755] hover:bg-[#05b54d] text-white rounded font-bold transition-colors">一鍵加入 LINE 好友</a></div>
+                    </Modal>
+
+                    {/* Payment Method Modal */}
+                    <Modal isOpen={isPaymentModalOpen} onClose={() => setIsPaymentModalOpen(false)}>
+                         <div className="text-center p-2">
+                            <h3 className="text-2xl font-bold text-slate-900 mb-6">{t.pricing.modalTitle}</h3>
+                            <div className="space-y-4">
+                                <button onClick={handleCreditCardClick} className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-lg transition-all flex items-center justify-center gap-3 shadow-md">
+                                    <CreditCard className="w-6 h-6" /> {t.pricing.credit}
+                                </button>
+                                <p className="text-red-500 text-sm font-bold mt-1">{t.pricing.creditNote}</p>
+                                
+                                <div className="relative flex py-2 items-center"><div className="flex-grow border-t border-gray-300"></div><span className="flex-shrink-0 mx-4 text-gray-400 text-sm">OR</span><div className="flex-grow border-t border-gray-300"></div></div>
+
+                                <button onClick={handleTransferClick} className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-lg transition-all flex items-center justify-center gap-3 shadow-md">
+                                    <Banknote className="w-6 h-6" /> {t.pricing.transfer}
+                                </button>
+                            </div>
+                        </div>
+                    </Modal>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
