@@ -202,7 +202,8 @@
                 },
                 pricing: { countdown: "早鳥優惠名額倒數！", title: "行程定價與席次鎖定", sub: "16-18席限定！體驗匠人精神，品嚐純粹風味。",
                     official: "官方牌價 (二人一室)", early: "方案 A：超級早鳥 (95折)限額10名", earlyNote: "限量優惠", double: "方案 B：雙人同行優惠", doubleNote: "每人現折 $1,000",
-                    joinLocal: "", joinDesc: "", finalPrice: "專案優惠價：", perPerson: "/ 人",
+                    joinLocal: "✈️ 自理機票價格 (Join Local)", joinDesc: "若選擇自行購買國際段機票，將扣除機票及稅金。", finalPrice: "最終費用：", perPerson: "/ 人",
+                    joinNote: "* 方案 A 與 B 不可疊加使用。",
                     note: "* 本表為報價需求參考，實際收費請依專員提供之報價單為主。", bonus: "", bonusDesc: "",
                     btnLine: "LINE 官方帳號諮詢", btnFb: "Facebook粉絲專頁諮詢", btnIg: "Instagram官方帳號諮詢", btnCall: "撥打諮詢 (02-2700-0903)", btnSeminar: "說明會報名", btnSeminarSub: "NT$ 200 / 人 (含三款清酒品飲與小點)",
                     timeUnits: { d: "天", h: "時", m: "分", s: "秒" },
@@ -282,7 +283,8 @@
                 },
                 pricing: { countdown: "Early Bird Countdown!", title: "Pricing & Booking", sub: "Limited to 16-18 seats! Experience true craftsmanship.",
                     official: "Official Price (Twin)", early: "Plan A: Early Bird", earlyNote: "Limited", double: "Plan B: Double Promo", doubleNote: "$1,000 Off per person",
-                    joinLocal: "", joinDesc: "", finalPrice: "Special Price:", perPerson: "/ person",
+                    joinLocal: "✈️ Join Local Price", joinDesc: "Choose this option if you purchase your own international flights. Airfare and taxes will be deducted.", finalPrice: "Final Price:", perPerson: "/ person",
+                    joinNote: "* Plans A and B cannot be combined.",
                     note: "* This is a reference quote. Final price depends on the specialist's invoice.", bonus: "", bonusDesc: "",
                     btnLine: "Consult via LINE", btnFb: "Facebook Consultation", btnIg: "Instagram Consultation", btnCall: "Call Us (02-2700-0903)", btnSeminar: "Seminar Registration", btnSeminarSub: "NT$ 200 / person (Includes 3 sakes)",
                     timeUnits: { d: "d", h: "h", m: "m", s: "s" },
@@ -362,7 +364,8 @@
                 },
                 pricing: { countdown: "早割キャンペーン終了間近！", title: "料金プランとご予約", sub: "16-18名様限定！職人の精神に触れ、純粋な風味を味わう。",
                     official: "通常料金 (2名1室)", early: "プラン A：早割プラン", earlyNote: "限定割引", double: "プラン B：ペア割引", doubleNote: "お一人様 $1,000 オフ",
-                    joinLocal: "", joinDesc: "", finalPrice: "特別価格：", perPerson: "/ 人",
+                    joinLocal: "✈️ 航空券自己手配価格 (Join Local)", joinDesc: "国際線航空券を自己手配される場合、航空券代および税金を差し引きます。", finalPrice: "最終料金：", perPerson: "/ 人",
+                    joinNote: "* プランAとBの併用はできません。",
                     note: "* 本表は参考価格です。最終的な料金は担当者がご提示する見積書に準じます。", bonus: "", bonusDesc: "",
                     btnLine: "LINEで相談する", btnFb: "Facebookで相談する", btnIg: "Instagramで相談する", btnCall: "電話で相談 (02-2700-0903)", btnSeminar: "説明会に申し込む", btnSeminarSub: "NT$ 200 / 人 (3種のテイスティング付)",
                     timeUnits: { d: "日", h: "時間", m: "分", s: "秒" },
@@ -891,7 +894,18 @@
                                     <div className="text-2xl font-bold text-blue-100">NT$ 58,400 <span className="text-sm font-normal text-slate-300">{t.pricing.perPerson}</span> <span className="text-sm text-amber-400 font-normal ml-2">{t.card}</span></div>
                                     <div className="text-xs text-blue-200/70 mt-1">{t.pricing.doubleNote}</div>
                                 </div>
+                                <div onClick={onOpenPayment} className="p-6 bg-slate-800/70 rounded border border-slate-500/70 md:col-span-2 cursor-pointer hover:bg-slate-800/90 hover:border-amber-400/70 transition-colors group">
+                                    <div className="text-amber-400 text-xl md:text-2xl font-bold serif-font mb-5 group-hover:text-amber-300">{t.pricing.joinLocal}</div>
+                                    <p className="text-slate-300 text-base md:text-lg leading-relaxed mb-6">{t.pricing.joinDesc}</p>
+                                    <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
+                                        <span className="text-2xl md:text-3xl font-bold text-white">{t.pricing.finalPrice}</span>
+                                        <span className="text-3xl md:text-4xl font-bold text-white">NT$ 47,900</span>
+                                        <span className="text-lg md:text-xl text-slate-400">{t.pricing.perPerson}</span>
+                                        <span className="text-lg md:text-xl text-amber-400">{t.card}</span>
+                                    </div>
+                                </div>
                              </div>
+                             <p className="text-sm md:text-base text-slate-400 mt-6 text-left">{t.pricing.joinNote}</p>
                              <p className="text-xs text-slate-400 mt-4 text-left">{t.pricing.note}</p>
                         </div>
                         
